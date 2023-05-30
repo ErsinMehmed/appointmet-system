@@ -1,0 +1,33 @@
+{
+  "dependencies": {
+    "@babel/core": "^7.21.8",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-transform-runtime": "^7.21.4",
+    "@babel/preset-react": "^7.18.6",
+    "axios": "^1.4.0",
+    "prop-types": "^15.8.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-paginate": "^8.2.0",
+    "react-router-dom": "^6.11.2",
+    "sweetalert2": "^11.7.5",
+    "webpack-notifier": "^1.15.0",
+    "yarn": "^1.22.19"
+  },
+  "scripts": {
+    "dev-server": "encore dev-server",
+    "dev": "encore dev",
+    "watch": "encore dev --watch",
+    "build": "encore production --progress"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.21.5",
+    "@hotwired/stimulus": "^3.2.1",
+    "@symfony/stimulus-bridge": "^3.2.2",
+    "@symfony/webpack-encore": "^4.3.0",
+    "core-js": "^3.30.2",
+    "stimulus": "^3.2.1",
+    "webpack": "^5.84.1",
+    "webpack-cli": "^5.1.1"
+  }
+}
