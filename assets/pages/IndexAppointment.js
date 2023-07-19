@@ -3,10 +3,11 @@ import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import axios from "axios";
 
-import { message } from "../Function";
+import { message } from "../utils";
 import Pagination from "../components/Pagination";
 import Table from "../components/Table";
 import TableFilter from "../components/TableFilter";
+import { path } from "../config";
 
 function ShowAppointment() {
   const [entity, setEntity] = useState([]);
@@ -15,7 +16,7 @@ function ShowAppointment() {
   const [dateTo, setDateTo] = useState("");
   const [name, setName] = useState("");
   const [personalNumber, setPersonalNumber] = useState("");
-  const [perPage, setPerPage] = useState(10); // Новото състояние за броя записи на страницата
+  const [perPage, setPerPage] = useState(10);
 
   // Fetch the appointment list upon component mount
   useEffect(() => {
@@ -30,7 +31,7 @@ function ShowAppointment() {
   // Fetch all data from controller
   const fetchAppointmentList = () => {
     axios
-      .get("/appointments")
+      .get(`${path}/api/appointments`)
       .then(function (response) {
         setEntity(response.data);
       })
@@ -51,7 +52,7 @@ function ShowAppointment() {
     }).then((result) => {
       if (result.isConfirmed) {
         axios
-          .delete(`/appointments/${uuid}`)
+          .delete(`${path}/api/appointments/${uuid}`)
           .then(function (response) {
             message(
               "success",

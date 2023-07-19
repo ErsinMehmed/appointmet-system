@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-import { validateFields, message } from "../Function";
+import { message } from "../utils";
+import { validateFields } from "../validations";
+import { rules } from "../rules/appointmentFormRules";
+import { path } from "../config";
+
 import BackButton from "../components/BackButton";
 import ErrorAlert from "../components/ErrorAlert";
 import Input from "../components/Input";
@@ -36,28 +40,29 @@ function AddAppointment() {
     }));
   };
 
-  // Update create
+  // Create
   const saveRecord = () => {
     setIsSaving(true);
     const data = new FormData();
 
     // Perform validation for all fields.
-    validateFields(
-      formData.name,
-      formData.personal_number,
-      formData.time,
-      formData.description
-    );
+    const errors = validateFields(formData, rules);
+
+    if(Object.keys(errors).length) {
+      setErrorsBag(errors);
+      setIsSaving(false);
+      return;
+    }
 
     data.append("name", formData.name);
     data.append("personal_number", formData.personal_number);
     data.append("time", formData.time);
     data.append("description", formData.description);
 
-    // Send a PUT request to update form data.
+    // Send a POST request to create record.
     axios
-      .post("/appointments", data)
-      .then(function (response) {
+      .post(`${path}/api/appointments`, data)
+      .then(function () {
         message("success", "Appointment has been added successfully!", true);
         setIsSaving(false);
         setFormData({

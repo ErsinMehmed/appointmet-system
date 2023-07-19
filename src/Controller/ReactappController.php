@@ -8,7 +8,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ReactappController extends AbstractController
 {
-    #[Route('/', name: 'reactapp', methods: 'GET')]
+    #[Route('/{reactRouting}', name: 'reactapp', methods: 'GET', requirements: ['reactRouting' => '^(?!api).+'], defaults: ['reactRouting' => null])]
+
     public function index(): Response
     {
         return $this->render('reactapp/index.html.twig');

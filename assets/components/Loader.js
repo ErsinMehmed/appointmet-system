@@ -4,7 +4,7 @@ function Loader() {
   return (
     <div className='d-flex align-items-center justify-content-center vh-100'>
       <div
-        class='spinner-border text-dark mr-3'
+        className='spinner-border text-dark mr-3'
         role='status'
       />
       Loading appointment details...

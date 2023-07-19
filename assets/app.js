@@ -14,11 +14,11 @@ import "./bootstrap";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import Main from "./Main";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 
 const root = ReactDOM.createRoot(document.getElementById("app"));
 root.render(
-  <BrowserRouter basename="/">
+  <BrowserRouter basename="/appointmet-system/public/">
     <Main />
   </BrowserRouter>
 );

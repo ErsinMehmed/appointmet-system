@@ -4,10 +4,11 @@ import axios from "axios";
 
 import BackButton from "../components/BackButton";
 import Loader from "../components/Loader";
+import { path } from "../config";
 
 function ViewAppointment() {
   const { id } = useParams();
-  const [entity, seEntity] = useState(null);
+  const [entity, setEntity] = useState(null);
   const [otherAppointments, setOtherAppointments] = useState([]);
 
   // Fetch the appointment list upon component mount
@@ -18,10 +19,10 @@ function ViewAppointment() {
   // Get all data from controller
   const fetchAppointmentData = () => {
     axios
-      .get(`/appointments/show/${id}`)
+      .get(`${path}/api/appointments/show/${id}`)
       .then(function (response) {
         const { entity, otherAppointments } = response.data;
-        seEntity(entity);
+        setEntity(entity);
         setOtherAppointments(otherAppointments);
       })
       .catch(function (error) {

@@ -1,3 +1,9 @@
 controllers:
     resource: ../src/Controller/
     type: attribute
+
+api:
+    resource: ../src/Controller/Api
+    type: attribute
+    prefix: /api
+    trailing_slash_on_root: false

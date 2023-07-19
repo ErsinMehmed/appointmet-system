@@ -2,7 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 
-import { validateFields, message } from "../Function";
+import { message } from "../utils";
+import { validateFields } from "../validations";
+import { rules } from "../rules/appointmentFormRules";
+import { path } from "../config";
+
 import BackButton from "../components/BackButton";
 import ErrorAlert from "../components/ErrorAlert";
 import Input from "../components/Input";
@@ -11,7 +15,7 @@ import SubmitButton from "../components/SubmitButton";
 import Textarea from "../components/Textarea";
 
 function EditAppointment() {
-  const [uuid, setUuid] = useState(useParams().id);
+  const uuid = useParams().id;
   const [appointment, setAppointment] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [errorsBag, setErrorsBag] = useState([]);
@@ -22,7 +26,7 @@ function EditAppointment() {
     description: "",
   });
 
-  // Fetch all data from controller
+  // Fetch data 
   useEffect(() => {
     fetchAppointmentList();
   }, []);
@@ -46,7 +50,7 @@ function EditAppointment() {
   // Get all data from controller
   const fetchAppointmentList = () => {
     axios
-      .get(`/appointments/edit/${uuid}`)
+      .get(`${path}/api/appointments/edit/${uuid}`)
       .then(function (response) {
         setAppointment(response.data);
       })
@@ -68,12 +72,13 @@ function EditAppointment() {
     setIsSaving(true);
 
     // Perform validation for all fields.
-    validateFields(
-      formData.name,
-      formData.personal_number,
-      formData.time,
-      formData.description
-    );
+    const errors = validateFields(formData, rules);
+
+    if(Object.keys(errors).length) {
+      setErrorsBag(errors);
+      setIsSaving(false);
+      return;
+    }
 
     const data = {
       name: formData.name,
@@ -84,10 +89,9 @@ function EditAppointment() {
 
     // Send a PUT request to update form data.
     axios
-      .put(`/appointments/${uuid}`, data)
-      .then(function (response) {
+      .put(`${path}/api/appointments/${uuid}`, data)
+      .then(function () {
         message("success", "Appointment has been updated successfully!", true);
-        fetchAppointmentList();
         setFormData({
           name: appointment.name,
           personal_number: appointment.personal_number,
@@ -106,9 +110,8 @@ function EditAppointment() {
           error.response.data.length > 0
         ) {
           setErrorsBag(error.response.data);
-        } else {
-          setErrorsBag(["Oops, something went wrong!"]);
-        }
+        } 
+
         setIsSaving(false);
       });
   };
