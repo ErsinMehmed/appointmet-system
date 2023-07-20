@@ -20,7 +20,7 @@ function ShowAppointment() {
 
   // Fetch the appointment list upon component mount
   useEffect(() => {
-    fetchAppointmentList();
+    fetchAppointment();
   }, []);
 
   // Retrieve the first page of results after applying the data set filter
@@ -28,8 +28,8 @@ function ShowAppointment() {
     setCurrentPage(1);
   }, [dateFrom, dateTo, name, personalNumber]);
 
-  // Fetch all data from controller
-  const fetchAppointmentList = () => {
+  // Fetch all Appointment data from controller
+  const fetchAppointment = () => {
     axios
       .get(`${path}/api/appointments`)
       .then(function (response) {
@@ -61,7 +61,8 @@ function ShowAppointment() {
               false,
               1000
             );
-            fetchAppointmentList();
+            
+            fetchAppointment();
           })
           .catch(function (error) {
             message("error", "Oops, Something went wrong!", false, false, 1000);
@@ -162,6 +163,7 @@ function ShowAppointment() {
               "Personal number",
               "Time",
               "Description",
+              "Room Number",
               "Action",
             ]}
             data={appointments}

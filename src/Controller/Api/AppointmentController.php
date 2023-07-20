@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use App\Entity\Room;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -11,9 +12,6 @@ use App\Entity\Appointment;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 class AppointmentController extends AbstractController
 {
@@ -33,7 +31,16 @@ class AppointmentController extends AbstractController
         $data = [];
 
         foreach ($appointments as $appointment) {
-            $data[] = $this->serializeData($appointment);
+            $appointmentData = $this->serializeData($appointment);
+
+            $room = $appointment->getRoom();
+
+            if ($room) {
+                $roomData = $this->serializeRoom($room);
+                $appointmentData['room'] = $roomData;
+            }
+
+            $data[] = $appointmentData;
         }
 
         return $this->json($data);
@@ -72,6 +79,12 @@ class AppointmentController extends AbstractController
             return $this->json($errorMessages, 400);
         }
 
+        $room = $doctrine->getRepository(Room::class)->find($request->request->get('room_id'));
+
+        if (!$room) {
+            return $this->json('Room not found', 404);
+        }
+
         $appointment = new Appointment();
         $appointment->setUuid(Uuid::uuid4()->toString());
         $appointment->setName($request->request->get('name'));
@@ -79,6 +92,7 @@ class AppointmentController extends AbstractController
         $time = \DateTime::createFromFormat('Y-m-d', $request->request->get('time'));
         $appointment->setTime($time);
         $appointment->setDescription($request->request->get('description'));
+        $appointment->setRoom($room);
 
         $doctrine->getManager()->persist($appointment);
         $doctrine->getManager()->flush();
@@ -164,10 +178,20 @@ class AppointmentController extends AbstractController
 
         $data = $this->serializeData($appointment);
 
+        $room = $appointment->getRoom();
+        $roomData = null;
+
+        if ($room) {
+            $roomData = $this->serializeRoom($room);
+        }
+
         $acceptHeader = $request->headers->get('Accept');
 
         if ($acceptHeader && strpos($acceptHeader, 'application/json') !== false) {
-            return $this->json($data);
+            return $this->json([
+                'appointment' => $data,
+                'room' => $roomData,
+            ]);
         }
 
         return $this->render('reactapp/index.html.twig');
@@ -203,11 +227,19 @@ class AppointmentController extends AbstractController
         }
 
         $content = json_decode($request->getContent());
+
+        $room = $doctrine->getRepository(Room::class)->find($content->room_id);
+
+        if (!$room) {
+            return $this->json('Room not found', 404);
+        }
+
         $appointment->setName($content->name);
         $appointment->setPersonalNumber($content->personal_number);
         $time = \DateTime::createFromFormat('Y-m-d', $content->time);
         $appointment->setTime($time);
         $appointment->setDescription($content->description);
+        $appointment->setRoom($room);
 
         $doctrine->getManager()->flush();
 
@@ -236,12 +268,6 @@ class AppointmentController extends AbstractController
         return $this->json('Deleted a Appointment successfully');
     }
 
-    private function serializeData($data): array
-    {
-        $serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
-        return $serializer->normalize($data);
-    }
-
     private function validateData($data)
     {
         $validator = Validation::createValidator();
@@ -263,8 +289,32 @@ class AppointmentController extends AbstractController
                 ]),
             ],
             'description' => new Assert\NotBlank(['message' => 'Description is required.']),
+            'room_id' => new Assert\NotBlank(['message' => 'Room is required.']),
         ]);
 
         return $validator->validate($data, $constraints);
     }
+
+    private function serializeData(Appointment $appointment): array
+    {
+        return [
+            'id' => $appointment->getId(),
+            'uuid' => $appointment->getUuid(),
+            'name' => $appointment->getName(),
+            'personalNumber' => $appointment->getPersonalNumber(),
+            'time' => $appointment->getTime(),
+            'description' => $appointment->getDescription(),
+            'description' => $appointment->getDescription(),
+        ];
+    }
+
+    private function serializeRoom(Room $room): array
+    {
+        return [
+            'id' => $room->getId(),
+            'number' => $room->getNumber(),
+        ];
+    }
+
+
 }

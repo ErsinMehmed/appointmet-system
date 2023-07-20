@@ -2,9 +2,9 @@ import React from "react";
 
 function ErrorAlert(props) {
   return (
-    props.errorsBag && Object.keys(props.errorsBag).length > 0 && (
+    props.errors && Object.keys(props.errors).length > 0 && (
       <div className="alert alert-danger">
-        {Object.values(props.errorsBag).map((error, index) => (
+        {Object.values(props.errors).map((error, index) => (
           <div className="mb-2" key={index}>
             {error}
           </div>

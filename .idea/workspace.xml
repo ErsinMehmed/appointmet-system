@@ -5,14 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9df19042-0819-4125-afc2-4c59011a42e7" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/assets/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/controllers.json" beforeDir="false" afterPath="$PROJECT_DIR$/assets/controllers.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/pages/CreateAppointment.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/pages/CreateAppointment.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/pages/IndexAppointment.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/pages/IndexAppointment.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer.lock" beforeDir="false" afterPath="$PROJECT_DIR$/composer.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Controller/AppointmentController.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Controller/AppointmentController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Controller/ReactappController.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Controller/ReactappController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webpack.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/webpack.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/Version20230526085808.php" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/Version20230526085808.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/Version20230528120818.php" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/Version20230528120818.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Controller/Api/AppointmentController.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Controller/Api/AppointmentController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataFixtures/AppFixtures.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataFixtures/AppFixtures.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataFixtures/AppointmentSeeder.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataFixtures/AppointmentSeeder.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/Appointment.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/Appointment.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -171,21 +170,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/xampp/htdocs/appointmet-system",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "yarn",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/xampp/htdocs/appointmet-system&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;yarn&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="phpunit.xml.dist" type="PHPUnitRunConfigurationType" factoryName="PHPUnit">
       <TestRunner scope="XML" />
@@ -201,6 +200,7 @@
       <option name="presentableId" value="Default" />
       <updated>1689755582806</updated>
       <workItem from="1689755584239" duration="7044000" />
+      <workItem from="1689838266988" duration="4614000" />
     </task>
     <servers />
   </component>

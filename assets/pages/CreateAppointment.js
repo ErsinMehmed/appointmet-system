@@ -9,28 +9,36 @@ import { path } from "../config";
 import BackButton from "../components/BackButton";
 import ErrorAlert from "../components/ErrorAlert";
 import Input from "../components/Input";
+import Select from "../components/Select";
 import SubmitButton from "../components/SubmitButton";
 import Textarea from "../components/Textarea";
 
 function AddAppointment() {
   const [isSaving, setIsSaving] = useState(false);
   const [errorsBag, setErrorsBag] = useState([]);
+  const [room, setRoom] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
-    personal_number: "",
+    personal_number: null,
     time: "",
     description: "",
+    room_id: null,
   });
 
   // Update the form data
   useEffect(() => {
     setFormData({
       name: "",
-      personal_number: "",
+      personal_number: null,
       time: "",
       description: "",
+      room_id: null,
     });
+
+    fetchRoom();
   }, []);
+
+  console.log(formData);
 
   // Update form data state by setting the value
   const handleInputChange = (name, value) => {
@@ -38,6 +46,18 @@ function AddAppointment() {
       ...prevData,
       [name]: value,
     }));
+  };
+
+  // Fetch all room data from controller
+  const fetchRoom = () => {
+    axios
+      .get(`${path}/api/rooms`)
+      .then(function (response) {
+        setRoom(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   };
 
   // Create
@@ -58,6 +78,7 @@ function AddAppointment() {
     data.append("personal_number", formData.personal_number);
     data.append("time", formData.time);
     data.append("description", formData.description);
+    data.append("room_id", formData.room_id);
 
     // Send a POST request to create record.
     axios
@@ -67,9 +88,10 @@ function AddAppointment() {
         setIsSaving(false);
         setFormData({
           name: "",
-          personal_number: "",
+          personal_number: null,
           time: "",
           description: "",
+          room_id: null,
         });
         setErrorsBag([]);
         setIsSaving(false);
@@ -98,47 +120,58 @@ function AddAppointment() {
         </div>
 
         <div className='card-body'>
-          <ErrorAlert errorsBag={errorsBag} />
+          <ErrorAlert errors={errorsBag} />
 
           <form>
             <Input
               label='Name'
-              for='name'
               value={formData.name}
               type='text'
               id='name'
               name='name'
               onChange={(value) => handleInputChange("name", value)}
+              errors={errorsBag}
             />
 
             <Input
               label='Personal Number'
-              for='personal-number'
               value={formData.personal_number}
               type='text'
               id='personal-number'
-              name='personalNumber'
+              name='personal_number'
               maxLength='10'
               onChange={(value) => handleInputChange("personal_number", value)}
+              errors={errorsBag}
             />
 
             <Input
               label='Choice date'
-              for='date'
               value={formData.time}
               type='date'
               id='date'
-              name='date'
+              name='time'
               onChange={(value) => handleInputChange("time", value)}
+              errors={errorsBag}
+            />
+
+            <Select
+              label="Choice room"
+              value={formData.room_id}
+              onChange={(value) => handleInputChange("room_id", value)}
+              id="room"
+              name='room_id'
+              options={room}
+              text="Room"
+              errors={errorsBag}
             />
 
             <Textarea
               label='Description'
-              for='description'
               value={formData.description}
               id='description'
               name='description'
               onChange={(value) => handleInputChange("description", value)}
+              errors={errorsBag}
             />
 
             <SubmitButton

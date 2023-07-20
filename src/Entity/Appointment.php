@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\AppointmentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: AppointmentRepository::class)]
 class Appointment
@@ -28,6 +30,15 @@ class Appointment
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
+        
+    #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: "appointments")]
+    #[ORM\JoinColumn(name: "room_id", nullable: false, referencedColumnName: "id")]
+    private ?Room $room = null;
+
+    public function __construct()
+    {
+        // $this->room = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -93,4 +104,15 @@ class Appointment
 
         return $this;
     }
+
+    public function getRoom(): ?Room
+    {
+        return $this->room;
+    }
+
+    public function setRoom(?Room $room): void
+    {
+        $room->addAppointment($this);
+        $this->room = $room;
+    }    
 }

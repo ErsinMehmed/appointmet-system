@@ -7,20 +7,23 @@ function Textarea(props) {
     }
   };
 
+  const hasError = props.errors && props.errors.hasOwnProperty(props.name);
+
   return (
-    <div className="form-group">
-      <label htmlFor="description">{props.label}</label>
+    <div className={`form-group ${hasError ? "has-error" : ""}`}>
+      <label htmlFor={props.id} className={`${hasError ? "text-danger" : ""}`}>{props.label}</label>
+
       <textarea
         onChange={handleChange}
         value={props.value}
-        className="form-control"
+        className={`form-control ${hasError ? "is-invalid" : ""}`}
         id={props.id}
         name={props.name}
-        required
       />
+      
+      {hasError && <div className="invalid-feedback">{props.errors[props.name]}</div>}
     </div>
   );
 }
 
 export default Textarea;
-

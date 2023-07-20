@@ -10,49 +10,64 @@ import { path } from "../config";
 import BackButton from "../components/BackButton";
 import ErrorAlert from "../components/ErrorAlert";
 import Input from "../components/Input";
+import Select from "../components/Select";
 import Loader from "../components/Loader";
 import SubmitButton from "../components/SubmitButton";
 import Textarea from "../components/Textarea";
 
 function EditAppointment() {
   const uuid = useParams().id;
-  const [appointment, setAppointment] = useState(null);
+  const [entity, setEntity] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   const [errorsBag, setErrorsBag] = useState([]);
+  const [room, setRoom] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
-    personal_number: "",
+    personal_number: null,
     time: "",
     description: "",
+    room_id: null,
   });
 
   // Fetch data 
   useEffect(() => {
-    fetchAppointmentList();
+    fetchAppointment();
+    fetchRoom();
   }, []);
 
   // Update the form data
   useEffect(() => {
-    if (appointment !== null) {
+    if (entity !== null) {
       setFormData({
-        name: appointment.name,
-        personal_number: appointment.personalNumber,
-        time: appointment.time
-          ? new Date(appointment.time.timestamp * 1000)
-              .toISOString()
-              .split("T")[0]
+        name: entity.appointment?.name,
+        personal_number: entity.appointment?.personalNumber,
+        time: entity.appointment?.time
+          ? new Date(entity.appointment.time).toISOString().split("T")[0] // Update this line
           : "",
-        description: appointment.description,
+        description: entity.appointment?.description,
+        room_id: entity.room?.number,
       });
     }
-  }, [appointment]);
+  }, [entity]);
 
-  // Get all data from controller
-  const fetchAppointmentList = () => {
+  // Get all appointment data from controller
+  const fetchAppointment = () => {
     axios
       .get(`${path}/api/appointments/edit/${uuid}`)
       .then(function (response) {
-        setAppointment(response.data);
+        setEntity(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  
+  // Fetch all room data from controller
+  const fetchRoom = () => {
+    axios
+      .get(`${path}/api/rooms`)
+      .then(function (response) {
+        setRoom(response.data);
       })
       .catch(function (error) {
         console.log(error);
@@ -85,6 +100,7 @@ function EditAppointment() {
       personal_number: formData.personal_number,
       time: formData.time,
       description: formData.description,
+      room_id: formData.room_id,
     };
 
     // Send a PUT request to update form data.
@@ -92,14 +108,6 @@ function EditAppointment() {
       .put(`${path}/api/appointments/${uuid}`, data)
       .then(function () {
         message("success", "Appointment has been updated successfully!", true);
-        setFormData({
-          name: appointment.name,
-          personal_number: appointment.personal_number,
-          time: appointment.time
-            ? new Date(appointment.time).toISOString().split("T")[0]
-            : "",
-          description: appointment.description,
-        });
         setErrorsBag([]);
         setIsSaving(false);
       })
@@ -117,7 +125,7 @@ function EditAppointment() {
   };
 
   // Render the spinner while loading
-  if (!appointment) {
+  if (!entity) {
     return <Loader />;
   }
 
@@ -131,47 +139,57 @@ function EditAppointment() {
         </div>
 
         <div className='card-body'>
-          <ErrorAlert errorsBag={errorsBag} />
+          <ErrorAlert errors={errorsBag} />
 
           <form>
             <Input
               label='Name'
-              for='name'
               value={formData.name}
               type='text'
               id='name'
               name='name'
               onChange={(value) => handleInputChange("name", value)}
+              errors={errorsBag}
             />
 
             <Input
               label='Personal Number'
-              for='personal-number'
               value={formData.personal_number}
               type='text'
               id='personal-number'
-              name='personalNumber'
+              name='personal_number'
               maxLength='10'
               onChange={(value) => handleInputChange("personal_number", value)}
+              errors={errorsBag}
             />
 
             <Input
               label='Choice date'
-              for='date'
               value={formData.time}
               type='date'
               id='date'
-              name='date'
+              name='time'
               onChange={(value) => handleInputChange("time", value)}
+              errors={errorsBag}
+            />
+
+            <Select
+              label="Choice room"
+              value={formData.room_id}
+              onChange={(value) => handleInputChange("room_id", value)}
+              id="room"
+              name="room_id"
+              options={room}
+              errors={errorsBag}
             />
 
             <Textarea
               label='Description'
-              for='description'
               value={formData.description}
               id='description'
               name='description'
               onChange={(value) => handleInputChange("description", value)}
+              errors={errorsBag}
             />
 
             <SubmitButton

@@ -21,4 +21,8 @@ export const rules = {
       minLength: 5,
       maxLength: 255,
     },
+    room_id: {
+      required: true,
+      type: 'number',
+    }
   };

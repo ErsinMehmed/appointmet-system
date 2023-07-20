@@ -7,24 +7,32 @@ const Select = (props) => {
     }
   };
 
+  const hasError = props.errors && props.errors.hasOwnProperty(props.name);
+
   return (
-    <div className="form-group">
-      <label htmlFor="props.for">{props.label}</label>
+    <div className={`form-group ${hasError ? "has-error" : ""}`}>
+      <label htmlFor={props.id} className={`${hasError ? "text-danger" : ""}`}>{props.label}</label>
+
       <select
         onChange={handleChange}
-        value={props.value}
+        value={props.value || ""}
         id={props.id}
-        className="form-select"
+        className={`form-select ${hasError ? "is-invalid" : ""}`}
       >
-        {props.options.map((option) => (
-          <option key={option} value={option}>
-            {option}
+        <option hidden>
+          Select {props.text}
+        </option>
+
+        {props.options.map((option, index) => (
+          <option key={index} value={typeof option === "object" ? Object.values(option)[0] : option}>
+            {typeof option === "object" ? Object.values(option)[1] : option}
           </option>
         ))}
       </select>
+
+      {hasError && <div className="invalid-feedback">{props.errors[props.name]}</div>}
     </div>
   );
 };
 
 export default Select;
-
