@@ -5,7 +5,7 @@ namespace App\Service;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Entity\Appointment;
 
-class DeleteManagerService
+class DeleteAppointmentManagerService
 {
     private $doctrine;
 

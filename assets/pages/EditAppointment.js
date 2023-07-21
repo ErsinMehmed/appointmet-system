@@ -29,7 +29,7 @@ function EditAppointment() {
     room_id: null,
   });
 
-  // Fetch data 
+  // Fetch data
   useEffect(() => {
     fetchAppointment();
     fetchRoom();
@@ -61,7 +61,7 @@ function EditAppointment() {
         console.log(error);
       });
   };
-  
+
   // Fetch all room data from controller
   const fetchRoom = () => {
     axios
@@ -89,7 +89,7 @@ function EditAppointment() {
     // Perform validation for all fields.
     const errors = validateFields(formData, rules);
 
-    if(Object.keys(errors).length) {
+    if (Object.keys(errors).length) {
       setErrorsBag(errors);
       setIsSaving(false);
       return;
@@ -118,7 +118,7 @@ function EditAppointment() {
           error.response.data.length > 0
         ) {
           setErrorsBag(error.response.data);
-        } 
+        }
 
         setIsSaving(false);
       });
@@ -130,45 +130,45 @@ function EditAppointment() {
   }
 
   return (
-    <div className='container'>
-      <h2 className='text-center mt-5 mb-3'>Add Appointment</h2>
+    <div className="container">
+      <h2 className="text-center mt-5 mb-3">Add Appointment</h2>
 
-      <div className='card'>
-        <div className='card-header'>
+      <div className="card">
+        <div className="card-header">
           <BackButton />
         </div>
 
-        <div className='card-body'>
+        <div className="card-body">
           <ErrorAlert errors={errorsBag} />
 
           <form>
             <Input
-              label='Name'
+              label="Name"
               value={formData.name}
-              type='text'
-              id='name'
-              name='name'
+              type="text"
+              id="name"
+              name="name"
               onChange={(value) => handleInputChange("name", value)}
               errors={errorsBag}
             />
 
             <Input
-              label='Personal Number'
+              label="Personal Number"
               value={formData.personal_number}
-              type='text'
-              id='personal-number'
-              name='personal_number'
-              maxLength='10'
+              type="text"
+              id="personal-number"
+              name="personal_number"
+              maxLength="10"
               onChange={(value) => handleInputChange("personal_number", value)}
               errors={errorsBag}
             />
 
             <Input
-              label='Choice date'
+              label="Choice date"
               value={formData.time}
-              type='date'
-              id='date'
-              name='time'
+              type="date"
+              id="date"
+              name="time"
               onChange={(value) => handleInputChange("time", value)}
               errors={errorsBag}
             />
@@ -184,10 +184,10 @@ function EditAppointment() {
             />
 
             <Textarea
-              label='Description'
+              label="Description"
               value={formData.description}
-              id='description'
-              name='description'
+              id="description"
+              name="description"
               onChange={(value) => handleInputChange("description", value)}
               errors={errorsBag}
             />
@@ -195,7 +195,7 @@ function EditAppointment() {
             <SubmitButton
               isSaving={isSaving}
               submit={updateRecord}
-              text='Update'
+              text="Update"
             />
           </form>
         </div>

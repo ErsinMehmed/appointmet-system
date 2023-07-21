@@ -66,7 +66,7 @@ function AddAppointment() {
     // Perform validation for all fields.
     const errors = validateFields(formData, rules);
 
-    if(Object.keys(errors).length) {
+    if (Object.keys(errors).length) {
       setErrorsBag(errors);
       setIsSaving(false);
       return;
@@ -109,45 +109,45 @@ function AddAppointment() {
   };
 
   return (
-    <div className='container'>
-      <h2 className='text-center mt-5 mb-3'>Add Appointment</h2>
+    <div className="container">
+      <h2 className="text-center mt-5 mb-3">Add Appointment</h2>
 
-      <div className='card'>
-        <div className='card-header'>
+      <div className="card">
+        <div className="card-header">
           <BackButton />
         </div>
 
-        <div className='card-body'>
+        <div className="card-body">
           <ErrorAlert errors={errorsBag} />
 
           <form>
             <Input
-              label='Name'
+              label="Name"
               value={formData.name}
-              type='text'
-              id='name'
-              name='name'
+              type="text"
+              id="name"
+              name="name"
               onChange={(value) => handleInputChange("name", value)}
               errors={errorsBag}
             />
 
             <Input
-              label='Personal Number'
+              label="Personal Number"
               value={formData.personal_number}
-              type='text'
-              id='personal-number'
-              name='personal_number'
-              maxLength='10'
+              type="text"
+              id="personal-number"
+              name="personal_number"
+              maxLength="10"
               onChange={(value) => handleInputChange("personal_number", value)}
               errors={errorsBag}
             />
 
             <Input
-              label='Choice date'
+              label="Choice date"
               value={formData.time}
-              type='date'
-              id='date'
-              name='time'
+              type="date"
+              id="date"
+              name="time"
               onChange={(value) => handleInputChange("time", value)}
               errors={errorsBag}
             />
@@ -157,26 +157,22 @@ function AddAppointment() {
               value={formData.room_id}
               onChange={(value) => handleInputChange("room_id", value)}
               id="room"
-              name='room_id'
+              name="room_id"
               options={room}
               text="Room"
               errors={errorsBag}
             />
 
             <Textarea
-              label='Description'
+              label="Description"
               value={formData.description}
-              id='description'
-              name='description'
+              id="description"
+              name="description"
               onChange={(value) => handleInputChange("description", value)}
               errors={errorsBag}
             />
 
-            <SubmitButton
-              isSaving={isSaving}
-              submit={saveRecord}
-              text='Save'
-            />
+            <SubmitButton isSaving={isSaving} submit={saveRecord} text="Save" />
           </form>
         </div>
       </div>

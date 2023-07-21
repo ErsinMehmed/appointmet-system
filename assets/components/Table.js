@@ -1,21 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { formatDate } from "../utils";
 
 const Table = (props) => {
-  function formatDate(date) {
-    const dateTime = new Date(date);
-    const year = dateTime.getFullYear();
-    const month = (dateTime.getMonth() + 1).toString().padStart(2, "0");
-    const day = dateTime.getDate().toString().padStart(2, "0");
-    const hours = dateTime.getHours().toString().padStart(2, "0");
-    const minutes = dateTime.getMinutes().toString().padStart(2, "0");
-  
-    return `${day}.${month}.${year} ${hours}:${minutes}`;
-  }
-
   return (
-    <table className='table table-striped table-hover table-bordered'>
-      <thead className='thead-dark'>
+    <table className="table table-striped table-hover table-bordered">
+      <thead className="thead-dark">
         <tr>
           {props.columns.map((column, index) => (
             <th key={index}>{column}</th>
@@ -26,9 +16,7 @@ const Table = (props) => {
       <tbody>
         {!props.data.length ? (
           <tr>
-            <td
-              className='text-center'
-              colSpan={props.columns.length + 1}>
+            <td className="text-center" colSpan={props.columns.length + 1}>
               No data found.
             </td>
           </tr>
@@ -40,8 +28,9 @@ const Table = (props) => {
                   return (
                     <td key={index}>
                       <Link
-                        className='text-primary'
-                        to={`/appointments/show/${row.uuid}`}>
+                        className="text-primary"
+                        to={`/appointments/show/${row.uuid}`}
+                      >
                         {value}
                       </Link>
                     </td>
@@ -60,14 +49,16 @@ const Table = (props) => {
               })}
               <td>
                 <Link
-                  className='btn btn-success mx-1'
-                  to={`/appointments/edit/${row.uuid}`}>
+                  className="btn btn-success mx-1"
+                  to={`/appointments/edit/${row.uuid}`}
+                >
                   Edit
                 </Link>
 
                 <button
                   onClick={() => props.deleteRecord(row.uuid)}
-                  className='btn btn-danger mx-1'>
+                  className="btn btn-danger mx-1"
+                >
                   Delete
                 </button>
               </td>

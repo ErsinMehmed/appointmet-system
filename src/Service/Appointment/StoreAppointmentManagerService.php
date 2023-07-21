@@ -8,7 +8,7 @@ use Ramsey\Uuid\Uuid;
 use App\Entity\Appointment;
 use App\Entity\Room;
 
-class StoreManagerService
+class StoreAppointmentManagerService
 {
     private $validator;
     private $doctrine;
@@ -23,8 +23,8 @@ class StoreManagerService
 
     public function storeAppointment(array $data): ?Appointment
     {
-        $violations = $this->dataValidatorService->validateData($data);
-
+        $violations = $this->dataValidatorService->validateAppointmentData($data);
+       
         if (count($violations) > 0) {
             return null;
         }

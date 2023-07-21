@@ -24,6 +24,8 @@ final class Version20230526085808 extends AbstractMigration
         $this->addSql('CREATE TABLE room (id INT AUTO_INCREMENT NOT NULL, number INTEGER NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE messenger_messages (id BIGINT AUTO_INCREMENT NOT NULL, body LONGTEXT NOT NULL, headers LONGTEXT NOT NULL, queue_name VARCHAR(190) NOT NULL, created_at DATETIME NOT NULL, available_at DATETIME NOT NULL, delivered_at DATETIME DEFAULT NULL, INDEX IDX_75EA56E0FB7336F0 (queue_name), INDEX IDX_75EA56E0E3BD61CE (available_at), INDEX IDX_75EA56E016BA31DB (delivered_at), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('ALTER TABLE appointment ADD CONSTRAINT FK_D34A04ADA23B42D FOREIGN KEY (room_id) REFERENCES room (id)');
+        $this->addSql('CREATE TABLE comment (id INT AUTO_INCREMENT NOT NULL, appointment_id INT NOT NULL, INDEX IDX_D34A04ADA23B42W (appointment_id), text TEXT NOT NULL, date DATETIME NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('ALTER TABLE comment ADD CONSTRAINT FK_D34A04ADA23B42W FOREIGN KEY (appointment_id) REFERENCES appointment (id)');
     }
 
     public function down(Schema $schema): void

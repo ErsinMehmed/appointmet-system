@@ -5,7 +5,6 @@ namespace App\Entity;
 use App\Repository\AppointmentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: AppointmentRepository::class)]
@@ -30,10 +29,13 @@ class Appointment
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
-        
+
     #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: "appointments")]
     #[ORM\JoinColumn(name: "room_id", nullable: false, referencedColumnName: "id")]
     private ?Room $room = null;
+
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: "appointment")]
+    private $comments;
 
     public function __construct()
     {
@@ -114,5 +116,17 @@ class Appointment
     {
         $room->addAppointment($this);
         $this->room = $room;
-    }    
+    }
+
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): self
+    {
+        $this->comments[] = $comment;
+
+        return $this;
+    }
 }

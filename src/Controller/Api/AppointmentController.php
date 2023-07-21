@@ -8,10 +8,11 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Entity\Appointment;
+use App\Entity\Comment;
 use App\Entity\Room;
-use App\Service\DeleteManagerService;
-use App\Service\StoreManagerService;
-use App\Service\UpdateManagerService;
+use App\Service\DeleteAppointmentManagerService;
+use App\Service\StoreAppointmentManagerService;
+use App\Service\UpdateAppointmentManagerService;
 
 class AppointmentController extends AbstractController
 {
@@ -65,7 +66,7 @@ class AppointmentController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\Response
      */
     #[Route('/appointments', name: 'add_appointment', methods: 'POST')]
-    public function store(StoreManagerService $storeManagerService, Request $request): Response
+    public function store(StoreAppointmentManagerService $storeManagerService, Request $request): Response
     {
         $appointmentData = $request->request->all();
         $appointment = $storeManagerService->storeAppointment($appointmentData);
@@ -95,6 +96,7 @@ class AppointmentController extends AbstractController
         }
 
         $data = [
+            'id' => $appointment->getId(),
             'name' => $appointment->getName(),
             'personal_number' => $appointment->getPersonalNumber(),
             'time' => $appointment->getTime(),
@@ -109,16 +111,27 @@ class AppointmentController extends AbstractController
         );
 
         $otherAppointments = [];
+        $commentOtherAppointments = [];
 
         foreach ($clientAppointments as $clientAppointment) {
             if ($clientAppointment->getTime() !== $appointment->getTime()) {
                 $otherAppointments[] = [
+                    'id' => $clientAppointment->getId(),
                     'name' => $clientAppointment->getName(),
                     'personal_number' => $clientAppointment->getPersonalNumber(),
                     'time' => $clientAppointment->getTime(),
                     'description' => $clientAppointment->getDescription(),
                 ];
+
+                foreach ($clientAppointment->getComments() as $comment) {
+                    $commentOtherAppointments[] = $this->serializeComment($comment);
+                }
             }
+        }
+
+        $comments = [];
+        foreach ($appointment->getComments() as $comment) {
+            $comments[] = $this->serializeComment($comment);
         }
 
         $acceptHeader = $request->headers->get('Accept');
@@ -127,6 +140,8 @@ class AppointmentController extends AbstractController
             return $this->json([
                 'entity' => $data,
                 'otherAppointments' => $otherAppointments,
+                'comments' => $comments,
+                'commentOtherAppointments' => $commentOtherAppointments,
             ]);
         }
 
@@ -180,7 +195,7 @@ class AppointmentController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\Response
      */
     #[Route('/appointments/{uuid}', name: 'appointment_update', methods: 'PUT')]
-    public function update(UpdateManagerService $updateManagerService, Request $request, string $uuid): Response
+    public function update(UpdateAppointmentManagerService $updateManagerService, Request $request, string $uuid): Response
     {
         $appointmentData = (array)json_decode($request->getContent());
         $appointment = $updateManagerService->updateAppointment($uuid, $appointmentData);
@@ -200,15 +215,15 @@ class AppointmentController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\Response
      */
     #[Route('/appointments/{uuid}', name: 'appointment_delete', methods: 'DELETE')]
-    public function destroy(DeleteManagerService $deleteManagerService, string $uuid): Response
+    public function destroy(DeleteAppointmentManagerService $deleteManagerService, string $uuid): Response
     {
         $isDeleted = $deleteManagerService->destroy($uuid);
 
         if (!$isDeleted) {
-            return $this->json('No Appointment found', 404);
+            return $this->json('No appointment found', 404);
         }
 
-        return $this->json('Deleted a Appointment successfully');
+        return $this->json('Deleted a appointment successfully');
     }
 
     private function serializeData(Appointment $appointment): array
@@ -228,6 +243,16 @@ class AppointmentController extends AbstractController
         return [
             'id' => $room->getId(),
             'number' => $room->getNumber(),
+        ];
+    }
+
+    private function serializeComment(Comment $comment): array
+    {
+        return [
+            'id' => $comment->getId(),
+            'appointment_id' => $comment->getAppointmentId(),
+            'text' => $comment->getText(),
+            'date' => $comment->getDate(),
         ];
     }
 }

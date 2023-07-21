@@ -7,7 +7,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class DataValidatorService
 {
-    public function validateData(array $data)
+    public function validateAppointmentData(array $data)
     {
         $validator = Validation::createValidator();
 
@@ -29,6 +29,25 @@ class DataValidatorService
             ],
             'description' => new Assert\NotBlank(['message' => 'Description is required.']),
             'room_id' => new Assert\NotBlank(['message' => 'Room is required.']),
+        ]);
+
+        return $validator->validate($data, $constraints);
+    }
+
+    public function validateCommentData(array $data)
+    {
+        $validator = Validation::createValidator();
+
+        $constraints = new Assert\Collection([
+            'text' => new Assert\NotBlank(['message' => 'text is required.']),
+            'date' => [
+                new Assert\NotBlank(['message' => 'Date is required.']),
+                new Assert\DateTime([
+                    'format' => 'Y-m-d',
+                    'message' => 'Time should be a valid date in the format Y-m-d.',
+                ]),
+            ],
+            'appointment_id' => new Assert\NotBlank(['message' => 'Appointment is required.']),
         ]);
 
         return $validator->validate($data, $constraints);

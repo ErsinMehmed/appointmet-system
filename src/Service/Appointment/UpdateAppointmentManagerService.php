@@ -7,7 +7,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use App\Entity\Appointment;
 use App\Entity\Room;
 
-class UpdateManagerService
+class UpdateAppointmentManagerService
 {
     private $validator;
     private $doctrine;
@@ -28,7 +28,7 @@ class UpdateManagerService
             return null;
         }
 
-        $violations = $this->dataValidatorService->validateData($data);
+        $violations = $this->dataValidatorService->validateAppointmentData($data);
 
         if (count($violations) > 0) {
             return null;

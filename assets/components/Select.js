@@ -11,7 +11,9 @@ const Select = (props) => {
 
   return (
     <div className={`form-group ${hasError ? "has-error" : ""}`}>
-      <label htmlFor={props.id} className={`${hasError ? "text-danger" : ""}`}>{props.label}</label>
+      <label htmlFor={props.id} className={`${hasError ? "text-danger" : ""}`}>
+        {props.label}
+      </label>
 
       <select
         onChange={handleChange}
@@ -19,18 +21,23 @@ const Select = (props) => {
         id={props.id}
         className={`form-select ${hasError ? "is-invalid" : ""}`}
       >
-        <option hidden>
-          Select {props.text}
-        </option>
+        <option hidden>Select {props.text}</option>
 
         {props.options.map((option, index) => (
-          <option key={index} value={typeof option === "object" ? Object.values(option)[0] : option}>
+          <option
+            key={index}
+            value={
+              typeof option === "object" ? Object.values(option)[0] : option
+            }
+          >
             {typeof option === "object" ? Object.values(option)[1] : option}
           </option>
         ))}
       </select>
 
-      {hasError && <div className="invalid-feedback">{props.errors[props.name]}</div>}
+      {hasError && (
+        <div className="invalid-feedback">{props.errors[props.name]}</div>
+      )}
     </div>
   );
 };

@@ -61,7 +61,7 @@ function ShowAppointment() {
               false,
               1000
             );
-            
+
             fetchAppointment();
           })
           .catch(function (error) {
@@ -130,19 +130,17 @@ function ShowAppointment() {
   };
 
   return (
-    <div className='container'>
-      <h2 className='text-center mt-5 mb-3'>Appointment</h2>
+    <div className="container">
+      <h2 className="text-center mt-5 mb-3">Appointment</h2>
 
-      <div className='card'>
-        <div className='card-header'>
-          <Link
-            className='btn btn-primary mt-2 mb-2'
-            to='/appointments/create'>
+      <div className="card">
+        <div className="card-header">
+          <Link className="btn btn-primary mt-2 mb-2" to="/appointments/create">
             Add Appointment
           </Link>
         </div>
 
-        <div className='card-body'>
+        <div className="card-body">
           <TableFilter
             dateFrom={dateFrom}
             dateTo={dateTo}

@@ -6,12 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="9df19042-0819-4125-afc2-4c59011a42e7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/Version20230526085808.php" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/Version20230526085808.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/Version20230528120818.php" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/Version20230528120818.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Controller/Api/AppointmentController.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Controller/Api/AppointmentController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/DataFixtures/AppFixtures.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataFixtures/AppFixtures.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/DataFixtures/AppointmentSeeder.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataFixtures/AppointmentSeeder.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Entity/Appointment.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/Appointment.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/pages/ShowAppointment.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/pages/ShowAppointment.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -201,6 +196,7 @@
       <updated>1689755582806</updated>
       <workItem from="1689755584239" duration="7044000" />
       <workItem from="1689838266988" duration="4614000" />
+      <workItem from="1689935804550" duration="24000" />
     </task>
     <servers />
   </component>

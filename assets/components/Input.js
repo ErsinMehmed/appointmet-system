@@ -11,7 +11,9 @@ function Input(props) {
 
   return (
     <div className={`form-group mb-2 ${hasError ? "has-error" : ""}`}>
-      <label htmlFor={props.id} className={`${hasError ? "text-danger" : ""}`}>{props.label}</label>
+      <label htmlFor={props.id} className={`${hasError ? "text-danger" : ""}`}>
+        {props.label}
+      </label>
 
       <input
         onChange={handleChange}
@@ -22,8 +24,10 @@ function Input(props) {
         maxLength={props.maxLength}
         className={`form-control ${hasError ? "is-invalid" : ""}`}
       />
-      
-      {hasError && <div className="invalid-feedback">{props.errors[props.name]}</div>}
+
+      {hasError && (
+        <div className="invalid-feedback">{props.errors[props.name]}</div>
+      )}
     </div>
   );
 }
