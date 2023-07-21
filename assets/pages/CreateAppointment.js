@@ -38,8 +38,6 @@ function AddAppointment() {
     fetchRoom();
   }, []);
 
-  console.log(formData);
-
   // Update form data state by setting the value
   const handleInputChange = (name, value) => {
     setFormData((prevData) => ({

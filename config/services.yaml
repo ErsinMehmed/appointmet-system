@@ -24,3 +24,12 @@ services:
     # please note that last definitions always *replace* previous ones
     App\Controller\RoomController:
         autowire: true
+
+    App\Service\StoreManagerService:
+        autowire: true
+
+    App\Service\UpdateManagerService:
+        autowire: true
+
+    App\Service\DeleteManagerService:
+        autowire: true

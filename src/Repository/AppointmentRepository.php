@@ -39,6 +39,17 @@ class AppointmentRepository extends ServiceEntityRepository
         }
     }
 
+    public function getClientAppointments(string $personalNumber, \DateTimeInterface $currentDateTime): array
+    {
+        return $this->createQueryBuilder('a')
+            ->where('a.personal_number = :personalNumber')
+            ->andWhere('a.time > :currentDateTime')
+            ->setParameter('personalNumber', $personalNumber)
+            ->setParameter('currentDateTime', $currentDateTime)
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return Appointment[] Returns an array of Appointment objects
 //     */
