@@ -8,9 +8,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Entity\Appointment;
-use App\Entity\Comment;
-use App\Entity\Room;
 use App\Service\DeleteAppointmentManagerService;
+use App\Service\SerializerService;
 use App\Service\StoreAppointmentManagerService;
 use App\Service\UpdateAppointmentManagerService;
 
@@ -23,7 +22,7 @@ class AppointmentController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\Response
      */
     #[Route('/appointments', name: 'appointment_app', methods: 'GET')]
-    public function index(ManagerRegistry $doctrine): Response
+    public function index(SerializerService $serializerService, ManagerRegistry $doctrine): Response
     {
         $appointments = $doctrine
             ->getRepository(Appointment::class)
@@ -32,12 +31,12 @@ class AppointmentController extends AbstractController
         $data = [];
 
         foreach ($appointments as $appointment) {
-            $appointmentData = $this->serializeData($appointment);
+            $appointmentData = $serializerService->serializeAppointment($appointment);
 
             $room = $appointment->getRoom();
 
             if ($room) {
-                $roomData = $this->serializeRoom($room);
+                $roomData = $serializerService->serializeRoom($room);
                 $appointmentData['room'] = $roomData;
             }
 
@@ -45,17 +44,6 @@ class AppointmentController extends AbstractController
         }
 
         return $this->json($data);
-    }
-
-    /**
-     * Create function
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    #[Route('/appointments/create', name: 'appointment_create', methods: 'GET')]
-    public function create(): Response
-    {
-        return $this->render('reactapp/index.html.twig');
     }
 
     /**
@@ -71,8 +59,16 @@ class AppointmentController extends AbstractController
         $appointmentData = $request->request->all();
         $appointment = $storeManagerService->storeAppointment($appointmentData);
 
+        if (is_array($appointment)) {
+            $appointment = (object)$appointment;
+        }
+
+        if (count($appointment->errors) > 0) {
+            return $this->json(['errors' => $appointment->errors], 400);
+        }
+
         if (!$appointment) {
-            return $this->json('An error occurred while creating the appointment', 400);
+            return $this->json(404);
         }
 
         return $this->json('New appointment has been added successfully');
@@ -87,21 +83,21 @@ class AppointmentController extends AbstractController
      * @return void
      */
     #[Route('/appointments/show/{uuid}', name: 'appointment_show', methods: 'GET')]
-    public function show(ManagerRegistry $doctrine, Request $request, string $uuid)
+    public function show(SerializerService $serializerService, ManagerRegistry $doctrine, Request $request, string $uuid)
     {
         $appointment = $doctrine->getManager()->getRepository(Appointment::class)->findOneBy(['uuid' => $uuid]);
 
         if (!$appointment) {
-            throw $this->createNotFoundException('Appointment not found.');
+            return $this->json(404);
         }
 
-        $data = [
-            'id' => $appointment->getId(),
-            'name' => $appointment->getName(),
-            'personal_number' => $appointment->getPersonalNumber(),
-            'time' => $appointment->getTime(),
-            'description' => $appointment->getDescription(),
-        ];
+        $data = $serializerService->serializeAppointment($appointment);
+
+        $comments = [];
+
+        foreach ($appointment->getComments() as $comment) {
+            $comments[] = $serializerService->serializeComment($comment);
+        }
 
         $currentDateTime = new \DateTime();
 
@@ -115,23 +111,12 @@ class AppointmentController extends AbstractController
 
         foreach ($clientAppointments as $clientAppointment) {
             if ($clientAppointment->getTime() !== $appointment->getTime()) {
-                $otherAppointments[] = [
-                    'id' => $clientAppointment->getId(),
-                    'name' => $clientAppointment->getName(),
-                    'personal_number' => $clientAppointment->getPersonalNumber(),
-                    'time' => $clientAppointment->getTime(),
-                    'description' => $clientAppointment->getDescription(),
-                ];
+                $otherAppointments[] = $serializerService->serializeAppointment($clientAppointment);
 
                 foreach ($clientAppointment->getComments() as $comment) {
-                    $commentOtherAppointments[] = $this->serializeComment($comment);
+                    $commentOtherAppointments[] = $serializerService->serializeComment($comment);
                 }
             }
-        }
-
-        $comments = [];
-        foreach ($appointment->getComments() as $comment) {
-            $comments[] = $this->serializeComment($comment);
         }
 
         $acceptHeader = $request->headers->get('Accept');
@@ -157,21 +142,21 @@ class AppointmentController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\Response
      */
     #[Route('/appointments/edit/{uuid}', name: 'appointment_edit', methods: 'GET')]
-    public function edit(ManagerRegistry $doctrine, Request $request, string $uuid): Response
+    public function edit(SerializerService $serializerService, ManagerRegistry $doctrine, Request $request, string $uuid): Response
     {
         $appointment = $doctrine->getManager()->getRepository(Appointment::class)->findOneBy(['uuid' => $uuid]);
 
         if (!$appointment) {
-            return $this->json('No Appointment found', 404);
+            return $this->json(404);
         }
 
-        $data = $this->serializeData($appointment);
+        $data = $serializerService->serializeAppointment($appointment);
 
         $room = $appointment->getRoom();
         $roomData = null;
 
         if ($room) {
-            $roomData = $this->serializeRoom($room);
+            $roomData = $serializerService->serializeRoom($room);
         }
 
         $acceptHeader = $request->headers->get('Accept');
@@ -200,8 +185,16 @@ class AppointmentController extends AbstractController
         $appointmentData = (array)json_decode($request->getContent());
         $appointment = $updateManagerService->updateAppointment($uuid, $appointmentData);
 
+        if (is_array($appointment)) {
+            $appointment = (object)$appointment;
+        }
+
+        if (count($appointment->errors)) {
+            return $this->json(['errors' => $appointment->errors], 400);
+        }
+
         if (!$appointment) {
-            return $this->json('No appointment found', 404);
+            return $this->json(404);
         }
 
         return $this->json('Appointment has been updated successfully');
@@ -220,39 +213,9 @@ class AppointmentController extends AbstractController
         $isDeleted = $deleteManagerService->destroy($uuid);
 
         if (!$isDeleted) {
-            return $this->json('No appointment found', 404);
+            return $this->json(404);
         }
 
         return $this->json('Deleted a appointment successfully');
-    }
-
-    private function serializeData(Appointment $appointment): array
-    {
-        return [
-            'id' => $appointment->getId(),
-            'uuid' => $appointment->getUuid(),
-            'name' => $appointment->getName(),
-            'personalNumber' => $appointment->getPersonalNumber(),
-            'time' => $appointment->getTime(),
-            'description' => $appointment->getDescription(),
-        ];
-    }
-
-    private function serializeRoom(Room $room): array
-    {
-        return [
-            'id' => $room->getId(),
-            'number' => $room->getNumber(),
-        ];
-    }
-
-    private function serializeComment(Comment $comment): array
-    {
-        return [
-            'id' => $comment->getId(),
-            'appointment_id' => $comment->getAppointmentId(),
-            'text' => $comment->getText(),
-            'date' => $comment->getDate(),
-        ];
     }
 }

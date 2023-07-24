@@ -50,10 +50,10 @@ function AddAppointment() {
   const fetchRoom = () => {
     axios
       .get(`${path}/api/rooms`)
-      .then(function (response) {
+      .then((response) => {
         setRoom(response.data);
       })
-      .catch(function (error) {
+      .catch((error) => {
         console.log(error);
       });
   };
@@ -64,13 +64,13 @@ function AddAppointment() {
     const data = new FormData();
 
     // Perform validation for all fields.
-    const errors = validateFields(formData, rules);
+    // const errors = validateFields(formData, rules);
 
-    if (Object.keys(errors).length) {
-      setErrorsBag(errors);
-      setIsSaving(false);
-      return;
-    }
+    // if (Object.keys(errors).length) {
+    //   setErrorsBag(errors);
+    //   setIsSaving(false);
+    //   return;
+    // }
 
     data.append("name", formData.name);
     data.append("personal_number", formData.personal_number);
@@ -81,8 +81,12 @@ function AddAppointment() {
     // Send a POST request to create record.
     axios
       .post(`${path}/api/appointments`, data)
-      .then(function () {
-        message("success", "Appointment has been added successfully!", true);
+      .then((response) => {
+        message(
+          "success",
+          response.data ?? "Appointment has been added successfully!",
+          true
+        );
         setIsSaving(false);
         setFormData({
           name: "",
@@ -94,16 +98,20 @@ function AddAppointment() {
         setErrorsBag([]);
         setIsSaving(false);
       })
-      .catch(function (error) {
+      .catch((error) => {
         if (
-          error.response &&
-          error.response.data &&
-          error.response.data.length > 0
+          (error.response.status =
+            400 &&
+            error.response.data.errors &&
+            error.response.data.errors.length > 0)
         ) {
-          setErrorsBag(error.response.data);
+          setErrorsBag(error.response.data.errors);
+        } else if ((error.response.status = 404)) {
+          setErrorsBag(["An error occurred while creating the appointment"]);
         } else {
           setErrorsBag(["Oops, something went wrong!"]);
         }
+
         setIsSaving(false);
       });
   };

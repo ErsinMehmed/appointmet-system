@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Service;
 
@@ -21,18 +21,24 @@ class StoreAppointmentManagerService
         $this->dataValidatorService = $dataValidatorService;
     }
 
-    public function storeAppointment(array $data): ?Appointment
+    public function storeAppointment(array $data): array
     {
         $violations = $this->dataValidatorService->validateAppointmentData($data);
-       
+
         if (count($violations) > 0) {
-            return null;
+            $errorMessages = array();
+
+            foreach ($violations as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+
+            return ['appointment' => null, 'errors' => $errorMessages];
         }
 
         $room = $this->doctrine->getRepository(Room::class)->find($data['room_id']);
 
         if (!$room) {
-            return null;
+            return ['appointment' => null, 'errors' => ['Room not found.']];
         }
 
         $appointment = new Appointment();
@@ -48,6 +54,6 @@ class StoreAppointmentManagerService
         $entityManager->persist($appointment);
         $entityManager->flush();
 
-        return $appointment;
+        return ['appointment' => $appointment, 'errors' => []];
     }
 }

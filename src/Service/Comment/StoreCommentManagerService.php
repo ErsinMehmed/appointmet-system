@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Service;
 
@@ -20,18 +20,24 @@ class StoreCommentManagerService
         $this->dataValidatorService = $dataValidatorService;
     }
 
-    public function storeComment(array $data): ?Comment
+    public function storeComment(array $data): array
     {
         $violations = $this->dataValidatorService->validateCommentData($data);
 
         if (count($violations) > 0) {
-            return null;
+            $errorMessages = array();
+
+            foreach ($violations as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+
+            return ['comment' => null, 'errors' => $errorMessages];
         }
 
         $appointment = $this->doctrine->getRepository(Appointment::class)->find($data['appointment_id']);
 
         if (!$appointment) {
-            return null;
+            return ['comment' => null, 'errors' => ['Appointment not found.']];
         }
 
         $comment = new Comment();
@@ -39,12 +45,11 @@ class StoreCommentManagerService
         $date = \DateTime::createFromFormat('Y-m-d', $data['date']);
         $comment->setDate($date);
         $comment->setAppointment($appointment);
-       
 
         $entityManager = $this->doctrine->getManager();
         $entityManager->persist($comment);
         $entityManager->flush();
 
-        return $comment;
+        return ['comment' => $comment, 'errors' => []];
     }
 }

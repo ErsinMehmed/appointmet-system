@@ -32,10 +32,10 @@ function ShowAppointment() {
   const fetchAppointment = () => {
     axios
       .get(`${path}/api/appointments`)
-      .then(function (response) {
+      .then((response) => {
         setEntity(response.data);
       })
-      .catch(function (error) {
+      .catch((error) => {
         console.log(error);
       });
   };
@@ -53,10 +53,10 @@ function ShowAppointment() {
       if (result.isConfirmed) {
         axios
           .delete(`${path}/api/appointments/${uuid}`)
-          .then(function (response) {
+          .then((response) => {
             message(
               "success",
-              "Appointment has been deleted successfully!",
+              response.data ?? "Appointment has been deleted successfully!",
               false,
               false,
               1000
@@ -64,7 +64,11 @@ function ShowAppointment() {
 
             fetchAppointment();
           })
-          .catch(function (error) {
+          .catch((error) => {
+            if ((error.response.status = 404)) {
+              setErrorsBag(["No appointment found"]);
+            }
+
             message("error", "Oops, Something went wrong!", false, false, 1000);
           });
       }

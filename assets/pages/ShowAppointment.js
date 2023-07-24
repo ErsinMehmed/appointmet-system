@@ -30,46 +30,11 @@ function ViewAppointment() {
     fetchAppointmentData();
   }, []);
 
-  // Update form data state by setting the value
-  const handleInputChange = (value, appointmentId) => {
-    setComments((prevComments) => ({
-      ...prevComments,
-      [appointmentId]: value,
-    }));
-  };
-
-  const startEditing = (commentId) => {
-    const comment = entityComments.find((c) => c.id === commentId);
-    if (comment) {
-      setEditingCommentId(commentId);
-      setEditedCommentText(comment.text);
-    }
-  };
-
-  const updateComment = (commentId) => {
-    axios
-      .put(`${path}/api/comments/${commentId}`, { text: editedCommentText })
-      .then(() => {
-        message("success", "Comment has been updated successfully!", true);
-        setEditingCommentId(null);
-        setEditedCommentText("");
-        fetchAppointmentData();
-      })
-      .catch(() => {
-        message("error", "Oops, Something went wrong!", false, false, 1000);
-      });
-  };
-
-  const cancelEditing = () => {
-    setEditingCommentId(null);
-    setEditedCommentText("");
-  };
-
   // Get all data from controller
   const fetchAppointmentData = () => {
     axios
       .get(`${path}/api/appointments/show/${id}`)
-      .then(function (response) {
+      .then((response) => {
         const {
           entity,
           otherAppointments,
@@ -81,9 +46,60 @@ function ViewAppointment() {
         setEntitComment(comments);
         setCommentOtherAppointments(commentOtherAppointments);
       })
-      .catch(function (error) {
+      .catch((error) => {
         console.log(error);
       });
+  };
+
+  // Update form data state by setting the value
+  const handleInputChange = (value, appointmentId) => {
+    setComments((prevComments) => ({
+      ...prevComments,
+      [appointmentId]: value,
+    }));
+  };
+
+  const startEditing = (commentId) => {
+    const comment = entityComments.find((c) => c.id === commentId);
+
+    if (comment) {
+      setEditingCommentId(commentId);
+      setEditedCommentText(comment.text);
+    }
+  };
+
+  const updateComment = (commentId) => {
+    axios
+      .put(`${path}/api/comments/${commentId}`, { text: editedCommentText })
+      .then((response) => {
+        message(
+          "success",
+          response.data ?? "Comment has been updated successfully!",
+          true
+        );
+        setEditingCommentId(null);
+        setEditedCommentText("");
+        fetchAppointmentData();
+      })
+      .catch((error) => {
+        if (
+          (error.response.status =
+            400 &&
+            error.response.data.errors &&
+            error.response.data.errors.length > 0)
+        ) {
+          setErrorsBag(error.response.data.errors);
+        } else if ((error.response.status = 404)) {
+          setErrorsBag(["No comment found"]);
+        } else {
+          setErrorsBag(["Oops, something went wrong!"]);
+        }
+      });
+  };
+
+  const cancelEditing = () => {
+    setEditingCommentId(null);
+    setEditedCommentText("");
   };
 
   const saveComment = (appointmentId) => {
@@ -117,8 +133,12 @@ function ViewAppointment() {
     // Send a POST request to create record.
     axios
       .post(`${path}/api/comments`, data)
-      .then(function () {
-        message("success", "Comments has been added successfully!", true);
+      .then((response) => {
+        message(
+          "success",
+          response.data ?? "Comments has been added successfully!",
+          true
+        );
         setErrorsBag([]);
         setComments((prevComments) => ({
           ...prevComments,
@@ -130,8 +150,19 @@ function ViewAppointment() {
         }));
         fetchAppointmentData();
       })
-      .catch(function () {
-        message("error", "Oops, Something went wrong!", false, false, 1000);
+      .catch((error) => {
+        if (
+          (error.response.status =
+            400 &&
+            error.response.data.errors &&
+            error.response.data.errors.length > 0)
+        ) {
+          setErrorsBag(error.response.data.errors);
+        } else if ((error.response.status = 404)) {
+          setErrorsBag(["An error occurred while creating the comment"]);
+        } else {
+          setErrorsBag(["Oops, something went wrong!"]);
+        }
 
         setIsSaving((prevIsSavingMap) => ({
           ...prevIsSavingMap,
@@ -153,10 +184,10 @@ function ViewAppointment() {
       if (result.isConfirmed) {
         axios
           .delete(`${path}/api/comments/${commentId}`)
-          .then(function () {
+          .then((response) => {
             message(
               "success",
-              "Comment has been deleted successfully!",
+              response.data ?? "Comment has been deleted successfully!",
               false,
               false,
               1000
@@ -164,8 +195,10 @@ function ViewAppointment() {
 
             fetchAppointmentData();
           })
-          .catch(function (error) {
-            message("error", "Oops, Something went wrong!", false, false, 1000);
+          .catch((error) => {
+            if ((error.response.status = 404)) {
+              setErrorsBag(["Not comment found"]);
+            }
           });
       }
     });

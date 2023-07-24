@@ -12,14 +12,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 class CommentController extends AbstractController
 {
-    #[Route('/comment', name: 'app_comment')]
-    public function index(): Response
-    {
-        return $this->render('comment/index.html.twig', [
-            'controller_name' => 'CommentController',
-        ]);
-    }
-
     /**
      * Store function
      *
@@ -33,8 +25,16 @@ class CommentController extends AbstractController
         $commentData = $request->request->all();
         $comment = $storeManagerService->storeComment($commentData);
 
+        if (is_array($comment)) {
+            $comment = (object)$comment;
+        }
+
+        if (count($comment->errors)) {
+            return $this->json(['errors' => $comment->errors], 400);
+        }
+
         if (!$comment) {
-            return $this->json('An error occurred while creating the comment', 400);
+            return $this->json(404);
         }
 
         return $this->json('New comment has been added successfully');
@@ -54,8 +54,16 @@ class CommentController extends AbstractController
         $commentData = (array)json_decode($request->getContent());
         $comment = $updateManagerService->updateComment($id, $commentData);
 
+        if (is_array($comment)) {
+            $comment = (object)$comment;
+        }
+
+        if (count($comment->errors)) {
+            return $this->json(['errors' => $comment->errors], 400);
+        }
+
         if (!$comment) {
-            return $this->json('No comment found', 404);
+            return $this->json(404);
         }
 
         return $this->json('Comment has been updated successfully');
@@ -74,7 +82,7 @@ class CommentController extends AbstractController
         $isDeleted = $deleteManagerService->destroy($id);
 
         if (!$isDeleted) {
-            return $this->json('No comment found', 404);
+            return $this->json(404);
         }
 
         return $this->json('Deleted a comment successfully');

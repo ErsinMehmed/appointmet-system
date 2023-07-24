@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Service;
 
@@ -20,24 +20,30 @@ class UpdateAppointmentManagerService
         $this->dataValidatorService = $dataValidatorService;
     }
 
-    public function updateAppointment(string $uuid, array $data): ?Appointment
+    public function updateAppointment(string $uuid, array $data): array
     {
         $appointment = $this->doctrine->getManager()->getRepository(Appointment::class)->findOneBy(['uuid' => $uuid]);
 
         if (!$appointment) {
-            return null;
+            return ['appointment' => null, 'errors' => ['Appointment not found.']];
         }
 
         $violations = $this->dataValidatorService->validateAppointmentData($data);
 
         if (count($violations) > 0) {
-            return null;
+            $errorMessages = array();
+
+            foreach ($violations as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+
+            return ['appointment' => null, 'errors' => $errorMessages];
         }
 
         $room = $this->doctrine->getRepository(Room::class)->find($data['room_id']);
 
         if (!$room) {
-            return null;
+            return ['appointment' => null, 'errors' => ['Room not found.']];
         }
 
         $appointment->setName($data['name']);
@@ -50,6 +56,6 @@ class UpdateAppointmentManagerService
         $entityManager = $this->doctrine->getManager();
         $entityManager->flush();
 
-        return $appointment;
+        return ['appointment' => $appointment, 'errors' => []];
     }
 }

@@ -54,10 +54,10 @@ function EditAppointment() {
   const fetchAppointment = () => {
     axios
       .get(`${path}/api/appointments/edit/${uuid}`)
-      .then(function (response) {
+      .then((response) => {
         setEntity(response.data);
       })
-      .catch(function (error) {
+      .catch((error) => {
         console.log(error);
       });
   };
@@ -66,10 +66,10 @@ function EditAppointment() {
   const fetchRoom = () => {
     axios
       .get(`${path}/api/rooms`)
-      .then(function (response) {
+      .then((response) => {
         setRoom(response.data);
       })
-      .catch(function (error) {
+      .catch((error) => {
         console.log(error);
       });
   };
@@ -106,18 +106,27 @@ function EditAppointment() {
     // Send a PUT request to update form data.
     axios
       .put(`${path}/api/appointments/${uuid}`, data)
-      .then(function () {
-        message("success", "Appointment has been updated successfully!", true);
+      .then((response) => {
+        message(
+          "success",
+          response.data ?? "Appointment has been updated successfully!",
+          true
+        );
         setErrorsBag([]);
         setIsSaving(false);
       })
-      .catch(function (error) {
+      .catch((error) => {
         if (
-          error.response &&
-          error.response.data &&
-          error.response.data.length > 0
+          (error.response.status =
+            400 &&
+            error.response.data.errors &&
+            error.response.data.errors.length > 0)
         ) {
-          setErrorsBag(error.response.data);
+          setErrorsBag(error.response.data.errors);
+        } else if ((error.response.status = 404)) {
+          setErrorsBag(["No appointment found"]);
+        } else {
+          setErrorsBag(["Oops, something went wrong!"]);
         }
 
         setIsSaving(false);
