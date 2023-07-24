@@ -1,26 +1,39 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { observer } from "mobx-react-lite";
 import { Link } from "react-router-dom";
-import Swal from "sweetalert2";
-import axios from "axios";
 
-import { message } from "../utils";
 import Pagination from "../components/Pagination";
 import Table from "../components/Table";
 import TableFilter from "../components/TableFilter";
-import { path } from "../config";
+import AppointmentAction from "../actions/Appointment";
 
-function ShowAppointment() {
-  const [entity, setEntity] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [name, setName] = useState("");
-  const [personalNumber, setPersonalNumber] = useState("");
-  const [perPage, setPerPage] = useState(10);
+function IndexAppointment() {
+  const {
+    entities,
+    dateFrom,
+    dateTo,
+    personalNumber,
+    currentPage,
+    name,
+    perPage,
+    totalPages,
+    fetchAllAppointments,
+    deleteRecord,
+    filterAppointments,
+    setDateTo,
+    setDateFrom,
+    setPersonalNumber,
+    setCurrentPage,
+    setName,
+    setPerPage,
+    setTotalPages,
+    handleNextPage,
+    handlePrevPage,
+  } = AppointmentAction;
 
   // Fetch the appointment list upon component mount
   useEffect(() => {
-    fetchAppointment();
+    fetchAllAppointments();
   }, []);
 
   // Retrieve the first page of results after applying the data set filter
@@ -28,110 +41,15 @@ function ShowAppointment() {
     setCurrentPage(1);
   }, [dateFrom, dateTo, name, personalNumber]);
 
-  // Fetch all Appointment data from controller
-  const fetchAppointment = () => {
-    axios
-      .get(`${path}/api/appointments`)
-      .then((response) => {
-        setEntity(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  // Delete record
-  const deleteRecord = (uuid) => {
-    Swal.fire({
-      title: "Are you sure you want to delete this appointment?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        axios
-          .delete(`${path}/api/appointments/${uuid}`)
-          .then((response) => {
-            message(
-              "success",
-              response.data ?? "Appointment has been deleted successfully!",
-              false,
-              false,
-              1000
-            );
-
-            fetchAppointment();
-          })
-          .catch((error) => {
-            if ((error.response.status = 404)) {
-              setErrorsBag(["No appointment found"]);
-            }
-
-            message("error", "Oops, Something went wrong!", false, false, 1000);
-          });
-      }
-    });
-  };
-
-  // Data filter based on date range, name, and personal number.
-  const filterAppointments = (appointments) => {
-    const filteredAppointments = appointments.filter((appointment) => {
-      const date = new Date(appointment.time);
-      const filterFromDate = dateFrom ? new Date(dateFrom) : null;
-      const filterToDate = dateTo ? new Date(dateTo) : null;
-      const clientName = appointment.name
-        .toLowerCase()
-        .includes(name.toLowerCase());
-      const appointmentPersonalNumber =
-        appointment.personalNumber.includes(personalNumber);
-
-      if (filterFromDate && date < filterFromDate) {
-        return false;
-      }
-
-      if (filterToDate && date > filterToDate) {
-        return false;
-      }
-
-      if (personalNumber && !appointmentPersonalNumber) {
-        return false;
-      }
-
-      if (name && !clientName) {
-        return false;
-      }
-
-      return true;
-    });
-
-    return filteredAppointments;
-  };
-
   // Perform pagination calculation
   const lastAppointment = currentPage * perPage;
   const firstAppointment = lastAppointment - perPage;
-  const filteredAppointments = filterAppointments(entity);
+  const filteredAppointments = filterAppointments(entities);
+  setTotalPages(Math.ceil(filteredAppointments.length / perPage));
   const appointments = filteredAppointments.slice(
     firstAppointment,
     lastAppointment
   );
-  const totalPages = Math.ceil(filteredAppointments.length / perPage);
-
-  // Handle next page
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  // Handle prev page
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
 
   return (
     <div className="container">
@@ -187,4 +105,4 @@ function ShowAppointment() {
   );
 }
 
-export default ShowAppointment;
+export default observer(IndexAppointment);

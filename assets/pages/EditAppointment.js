@@ -1,11 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { observer } from "mobx-react-lite";
 import { useParams } from "react-router-dom";
-import axios from "axios";
-
-import { message } from "../utils";
-import { validateFields } from "../validations";
-import { rules } from "../rules/appointmentFormRules";
-import { path } from "../config";
 
 import BackButton from "../components/BackButton";
 import ErrorAlert from "../components/ErrorAlert";
@@ -14,26 +9,27 @@ import Select from "../components/Select";
 import Loader from "../components/Loader";
 import SubmitButton from "../components/SubmitButton";
 import Textarea from "../components/Textarea";
+import AppointmentAction from "../actions/Appointment";
 
 function EditAppointment() {
   const uuid = useParams().id;
-  const [entity, setEntity] = useState([]);
-  const [isSaving, setIsSaving] = useState(false);
-  const [errorsBag, setErrorsBag] = useState([]);
-  const [room, setRoom] = useState([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    personal_number: null,
-    time: "",
-    description: "",
-    room_id: null,
-  });
+  const {
+    entity,
+    formData,
+    isSaving,
+    errorsBag,
+    room,
+    setFormData,
+    fetchRoom,
+    updateRecord,
+    fetchAppointment,
+  } = AppointmentAction;
 
   // Fetch data
   useEffect(() => {
-    fetchAppointment();
+    fetchAppointment(uuid);
     fetchRoom();
-  }, []);
+  }, [fetchAppointment, fetchRoom]);
 
   // Update the form data
   useEffect(() => {
@@ -42,7 +38,7 @@ function EditAppointment() {
         name: entity.appointment?.name,
         personal_number: entity.appointment?.personalNumber,
         time: entity.appointment?.time
-          ? new Date(entity.appointment.time).toISOString().split("T")[0] // Update this line
+          ? new Date(entity.appointment.time).toISOString().split("T")[0]
           : "",
         description: entity.appointment?.description,
         room_id: entity.room?.number,
@@ -50,87 +46,12 @@ function EditAppointment() {
     }
   }, [entity]);
 
-  // Get all appointment data from controller
-  const fetchAppointment = () => {
-    axios
-      .get(`${path}/api/appointments/edit/${uuid}`)
-      .then((response) => {
-        setEntity(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  // Fetch all room data from controller
-  const fetchRoom = () => {
-    axios
-      .get(`${path}/api/rooms`)
-      .then((response) => {
-        setRoom(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
   // Update form data state by setting the value
   const handleInputChange = (name, value) => {
-    setFormData((prevData) => ({
-      ...prevData,
+    setFormData({
+      ...formData,
       [name]: value,
-    }));
-  };
-
-  // Update record
-  const updateRecord = () => {
-    setIsSaving(true);
-
-    // Perform validation for all fields.
-    const errors = validateFields(formData, rules);
-
-    if (Object.keys(errors).length) {
-      setErrorsBag(errors);
-      setIsSaving(false);
-      return;
-    }
-
-    const data = {
-      name: formData.name,
-      personal_number: formData.personal_number,
-      time: formData.time,
-      description: formData.description,
-      room_id: formData.room_id,
-    };
-
-    // Send a PUT request to update form data.
-    axios
-      .put(`${path}/api/appointments/${uuid}`, data)
-      .then((response) => {
-        message(
-          "success",
-          response.data ?? "Appointment has been updated successfully!",
-          true
-        );
-        setErrorsBag([]);
-        setIsSaving(false);
-      })
-      .catch((error) => {
-        if (
-          (error.response.status =
-            400 &&
-            error.response.data.errors &&
-            error.response.data.errors.length > 0)
-        ) {
-          setErrorsBag(error.response.data.errors);
-        } else if ((error.response.status = 404)) {
-          setErrorsBag(["No appointment found"]);
-        } else {
-          setErrorsBag(["Oops, something went wrong!"]);
-        }
-
-        setIsSaving(false);
-      });
+    });
   };
 
   // Render the spinner while loading
@@ -203,7 +124,7 @@ function EditAppointment() {
 
             <SubmitButton
               isSaving={isSaving}
-              submit={updateRecord}
+              submit={() => updateRecord(uuid)}
               text="Update"
             />
           </form>
@@ -213,4 +134,4 @@ function EditAppointment() {
   );
 }
 
-export default EditAppointment;
+export default observer(EditAppointment);

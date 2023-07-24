@@ -1,10 +1,6 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-
-import { message } from "../utils";
-import { validateFields } from "../validations";
-import { rules } from "../rules/appointmentFormRules";
-import { path } from "../config";
+import React, { useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { observer } from "mobx-react-lite";
 
 import BackButton from "../components/BackButton";
 import ErrorAlert from "../components/ErrorAlert";
@@ -12,20 +8,19 @@ import Input from "../components/Input";
 import Select from "../components/Select";
 import SubmitButton from "../components/SubmitButton";
 import Textarea from "../components/Textarea";
+import AppointmentAction from "../actions/Appointment";
 
 function AddAppointment() {
-  const [isSaving, setIsSaving] = useState(false);
-  const [errorsBag, setErrorsBag] = useState([]);
-  const [room, setRoom] = useState([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    personal_number: null,
-    time: "",
-    description: "",
-    room_id: null,
-  });
+  const {
+    formData,
+    isSaving,
+    errorsBag,
+    room,
+    setFormData,
+    fetchRoom,
+    saveRecord,
+  } = AppointmentAction;
 
-  // Update the form data
   useEffect(() => {
     setFormData({
       name: "",
@@ -40,80 +35,10 @@ function AddAppointment() {
 
   // Update form data state by setting the value
   const handleInputChange = (name, value) => {
-    setFormData((prevData) => ({
-      ...prevData,
+    setFormData({
+      ...formData,
       [name]: value,
-    }));
-  };
-
-  // Fetch all room data from controller
-  const fetchRoom = () => {
-    axios
-      .get(`${path}/api/rooms`)
-      .then((response) => {
-        setRoom(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  // Create
-  const saveRecord = () => {
-    setIsSaving(true);
-    const data = new FormData();
-
-    // Perform validation for all fields.
-    // const errors = validateFields(formData, rules);
-
-    // if (Object.keys(errors).length) {
-    //   setErrorsBag(errors);
-    //   setIsSaving(false);
-    //   return;
-    // }
-
-    data.append("name", formData.name);
-    data.append("personal_number", formData.personal_number);
-    data.append("time", formData.time);
-    data.append("description", formData.description);
-    data.append("room_id", formData.room_id);
-
-    // Send a POST request to create record.
-    axios
-      .post(`${path}/api/appointments`, data)
-      .then((response) => {
-        message(
-          "success",
-          response.data ?? "Appointment has been added successfully!",
-          true
-        );
-        setIsSaving(false);
-        setFormData({
-          name: "",
-          personal_number: null,
-          time: "",
-          description: "",
-          room_id: null,
-        });
-        setErrorsBag([]);
-        setIsSaving(false);
-      })
-      .catch((error) => {
-        if (
-          (error.response.status =
-            400 &&
-            error.response.data.errors &&
-            error.response.data.errors.length > 0)
-        ) {
-          setErrorsBag(error.response.data.errors);
-        } else if ((error.response.status = 404)) {
-          setErrorsBag(["An error occurred while creating the appointment"]);
-        } else {
-          setErrorsBag(["Oops, something went wrong!"]);
-        }
-
-        setIsSaving(false);
-      });
+    });
   };
 
   return (
@@ -188,4 +113,4 @@ function AddAppointment() {
   );
 }
 
-export default AddAppointment;
+export default observer(AddAppointment);

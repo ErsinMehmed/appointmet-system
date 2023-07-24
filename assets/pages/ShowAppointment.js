@@ -1,62 +1,52 @@
 import React, { useState, useEffect } from "react";
+import { observer } from "mobx-react-lite";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import axios from "axios";
 
 import { message, formatDate } from "../utils";
-import { validateFields } from "../validations";
-import { rules } from "../rules/commentFormRules";
 import { path } from "../config";
 
 import BackButton from "../components/BackButton";
 import Loader from "../components/Loader";
 import SubmitButton from "../components/SubmitButton";
 import Textarea from "../components/Textarea";
+import AppointmentAction from "../actions/Appointment";
+import CommentAction from "../actions/Comment";
 
-function ViewAppointment() {
-  const { id } = useParams();
-  const [entity, setEntity] = useState(null);
-  const [isSaving, setIsSaving] = useState({});
-  const [comments, setComments] = useState({});
+function ShowAppointment() {
+  const uuid = useParams().id;
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editedCommentText, setEditedCommentText] = useState("");
-  const [errorsBag, setErrorsBag] = useState([]);
-  const [otherAppointments, setOtherAppointments] = useState([]);
-  const [entityComments, setEntitComment] = useState([]);
-  const [commentOtherAppointments, setCommentOtherAppointments] = useState([]);
+  const {
+    entity,
+    otherAppointments,
+    entityComments,
+    commentOtherAppointments,
+    fetchAppointmentData,
+  } = AppointmentAction;
+
+  const {
+    isSaving,
+    comments,
+    errorsBag,
+    setComments,
+    setErrorsBag,
+    saveComment,
+    deleteComment,
+  } = CommentAction;
 
   // Fetch the appointment list upon component mount
   useEffect(() => {
-    fetchAppointmentData();
+    fetchAppointmentData(uuid);
   }, []);
-
-  // Get all data from controller
-  const fetchAppointmentData = () => {
-    axios
-      .get(`${path}/api/appointments/show/${id}`)
-      .then((response) => {
-        const {
-          entity,
-          otherAppointments,
-          comments,
-          commentOtherAppointments,
-        } = response.data;
-        setEntity(entity);
-        setOtherAppointments(otherAppointments);
-        setEntitComment(comments);
-        setCommentOtherAppointments(commentOtherAppointments);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
 
   // Update form data state by setting the value
   const handleInputChange = (value, appointmentId) => {
-    setComments((prevComments) => ({
-      ...prevComments,
+    setComments({
+      ...comments[appointmentId],
       [appointmentId]: value,
-    }));
+    });
   };
 
   const startEditing = (commentId) => {
@@ -102,108 +92,6 @@ function ViewAppointment() {
     setEditedCommentText("");
   };
 
-  const saveComment = (appointmentId) => {
-    setIsSaving((prevIsSavingMap) => ({
-      ...prevIsSavingMap,
-      [appointmentId]: true,
-    }));
-
-    const data = new FormData();
-    const currentDate = new Date();
-
-    // Perform validation for all fields.
-    const errors = validateFields(
-      { text: comments[appointmentId] || "" },
-      rules
-    );
-
-    if (Object.keys(errors).length) {
-      setErrorsBag(errors);
-      setIsSaving((prevIsSavingMap) => ({
-        ...prevIsSavingMap,
-        [appointmentId]: false,
-      }));
-      return;
-    }
-
-    data.append("appointment_id", appointmentId);
-    data.append("text", comments[appointmentId]);
-    data.append("date", currentDate.toISOString().split("T")[0]);
-
-    // Send a POST request to create record.
-    axios
-      .post(`${path}/api/comments`, data)
-      .then((response) => {
-        message(
-          "success",
-          response.data ?? "Comments has been added successfully!",
-          true
-        );
-        setErrorsBag([]);
-        setComments((prevComments) => ({
-          ...prevComments,
-          [appointmentId]: "",
-        }));
-        setIsSaving((prevIsSavingMap) => ({
-          ...prevIsSavingMap,
-          [appointmentId]: false,
-        }));
-        fetchAppointmentData();
-      })
-      .catch((error) => {
-        if (
-          (error.response.status =
-            400 &&
-            error.response.data.errors &&
-            error.response.data.errors.length > 0)
-        ) {
-          setErrorsBag(error.response.data.errors);
-        } else if ((error.response.status = 404)) {
-          setErrorsBag(["An error occurred while creating the comment"]);
-        } else {
-          setErrorsBag(["Oops, something went wrong!"]);
-        }
-
-        setIsSaving((prevIsSavingMap) => ({
-          ...prevIsSavingMap,
-          [appointmentId]: false,
-        }));
-      });
-  };
-
-  // Delete delete comment
-  const deleteComment = (commentId) => {
-    Swal.fire({
-      title: "Are you sure you want to delete this comment?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        axios
-          .delete(`${path}/api/comments/${commentId}`)
-          .then((response) => {
-            message(
-              "success",
-              response.data ?? "Comment has been deleted successfully!",
-              false,
-              false,
-              1000
-            );
-
-            fetchAppointmentData();
-          })
-          .catch((error) => {
-            if ((error.response.status = 404)) {
-              setErrorsBag(["Not comment found"]);
-            }
-          });
-      }
-    });
-  };
-
   // Render the spinner while loading
   if (!entity) {
     return <Loader />;
@@ -222,7 +110,9 @@ function ViewAppointment() {
                 <div className="widget-49-title-wrapper">
                   <div className="widget-49-date-primary">
                     <span className="widget-49-date-day">
-                      {new Date(entity.time).getDate()}
+                      {isNaN(new Date(entity.time).getDate())
+                        ? "Invalid Date"
+                        : new Date(entity.time).getDate()}
                     </span>
 
                     <span className="widget-49-date-month">
@@ -266,7 +156,7 @@ function ViewAppointment() {
                   {entityComments &&
                     entityComments.map((comment, index) => (
                       <div className="card p-3 mb-3" key={index}>
-                        {editingCommentId === comment.id ? ( // Check if the comment is being edited
+                        {editingCommentId === comment.id ? (
                           <div className="d-flex justify-content-between align-items-center">
                             <div className="user d-flex flex-row align-items-center">
                               <input
@@ -314,7 +204,7 @@ function ViewAppointment() {
                               </button>
                               <button
                                 className="btn btn-danger mx-1"
-                                onClick={() => deleteComment(comment.id)}
+                                onClick={() => deleteComment(comment.id, uuid)}
                               >
                                 Delete
                               </button>
@@ -341,7 +231,7 @@ function ViewAppointment() {
 
               <SubmitButton
                 isSaving={isSaving[entity.id] || false}
-                submit={() => saveComment(entity.id)}
+                submit={() => saveComment(entity.id, uuid)}
                 text="Post comment"
               />
             </div>
@@ -430,7 +320,9 @@ function ViewAppointment() {
                                     </button>
 
                                     <button
-                                      onClick={() => deleteComment(comment.id)}
+                                      onClick={() =>
+                                        deleteComment(comment.id, uuid)
+                                      }
                                       className="btn btn-danger mx-1"
                                     >
                                       Delete
@@ -460,7 +352,7 @@ function ViewAppointment() {
 
                     <SubmitButton
                       isSaving={isSaving[otherAppointment.id] || false}
-                      submit={() => saveComment(otherAppointment.id)}
+                      submit={() => saveComment(otherAppointment.id, uuid)}
                       text="Post comment"
                     />
                   </div>
@@ -474,4 +366,4 @@ function ViewAppointment() {
   );
 }
 
-export default ViewAppointment;
+export default observer(ShowAppointment);
