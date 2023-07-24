@@ -39,7 +39,7 @@ function IndexAppointment() {
   // Retrieve the first page of results after applying the data set filter
   useEffect(() => {
     setCurrentPage(1);
-  }, [dateFrom, dateTo, name, personalNumber]);
+  }, []);
 
   // Perform pagination calculation
   const lastAppointment = currentPage * perPage;

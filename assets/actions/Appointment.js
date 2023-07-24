@@ -104,8 +104,8 @@ class Appointment {
     this.dateTo = dateTo;
   };
 
-  setDateFrom = (formData) => {
-    this.formData = formData;
+  setDateFrom = (dateFrom) => {
+    this.dateFrom = dateFrom;
   };
 
   setEntity = (entity) => {
@@ -339,7 +339,7 @@ class Appointment {
       const filterToDate = this.dateTo ? new Date(this.dateTo) : null;
       const clientName = appointment.name
         .toLowerCase()
-        .includes(name.toLowerCase());
+        .includes(this.name.toLowerCase());
       const appointmentPersonalNumber = appointment.personalNumber.includes(
         this.personalNumber
       );
@@ -356,7 +356,7 @@ class Appointment {
         return false;
       }
 
-      if (name && !clientName) {
+      if (this.name && !clientName) {
         return false;
       }
 
