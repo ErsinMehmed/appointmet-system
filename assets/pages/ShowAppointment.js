@@ -1,11 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { useParams } from "react-router-dom";
-import Swal from "sweetalert2";
-import axios from "axios";
 
-import { message, formatDate } from "../utils";
-import { path } from "../config";
+import { formatDate } from "../utils";
 
 import BackButton from "../components/BackButton";
 import Loader from "../components/Loader";
@@ -53,6 +50,15 @@ function ShowAppointment() {
     }
   };
 
+  const startEditingOther = (commentId) => {
+    const comment = commentOtherAppointments.find((c) => c.id === commentId);
+
+    if (comment) {
+      setEditingCommentId(commentId);
+      setEditedCommentText(comment.text);
+    }
+  };
+
   // Update form data state by setting the value
   const handleInputChange = (value, appointmentId) => {
     setComments({
@@ -62,7 +68,7 @@ function ShowAppointment() {
   };
 
   // Render the spinner while loading
-  if (!entity) {
+  if (!entity && !otherAppointments) {
     return <Loader />;
   }
 
@@ -137,6 +143,7 @@ function ShowAppointment() {
                                 className="form-control"
                               />
                             </div>
+
                             <div>
                               <button
                                 className="btn btn-success mx-1"
@@ -144,6 +151,7 @@ function ShowAppointment() {
                               >
                                 Save
                               </button>
+
                               <button
                                 className="btn btn-secondary mx-1"
                                 onClick={() => cancelEditing()}
@@ -161,16 +169,19 @@ function ShowAppointment() {
                                 </span>
                               </span>
                             </div>
+
                             <div>
                               <span className="me-3">
                                 {formatDate(comment.date)}
                               </span>
+
                               <button
                                 className="btn btn-primary mx-1"
                                 onClick={() => startEditing(comment.id)}
                               >
                                 Edit
                               </button>
+
                               <button
                                 className="btn btn-danger mx-1"
                                 onClick={() => deleteComment(comment.id, uuid)}
@@ -250,6 +261,7 @@ function ShowAppointment() {
                       </div>
 
                       <h5 className="text-center mt-2 mb-1">Description</h5>
+
                       <div className="widget-49-meeting-item text-center">
                         {otherAppointment.description}
                       </div>
@@ -276,56 +288,15 @@ function ShowAppointment() {
                                     </span>
                                   </div>
 
-                                  <div>
-                                    <span className="me-3">
-                                      {formatDate(comment.date)}
-                                    </span>
-
-                                    <button
-                                      className="btn btn-primary mx-1"
-                                      onClick={() =>
-                                        deleteComment(comment.id, uuid)
-                                      }
-                                    >
-                                      Edit
-                                    </button>
-
-                                    <button
-                                      onClick={() =>
-                                        deleteComment(comment.id, uuid)
-                                      }
-                                      className="btn btn-danger mx-1"
-                                    >
-                                      Delete
-                                    </button>
-                                  </div>
+                                  <span className="me-3">
+                                    {formatDate(comment.date)}
+                                  </span>
                                 </div>
                               </div>
                             ) : null
                           )}
                       </div>
                     </div>
-                  </div>
-
-                  <div className="px-2 mb-3">
-                    <div className="d-flex flex-row align-items-start">
-                      <Textarea
-                        label="Add comment"
-                        value={comments[otherAppointment.id] || ""}
-                        id="text"
-                        name="text"
-                        onChange={(value) =>
-                          handleInputChange(value, otherAppointment.id)
-                        }
-                        errors={errorsBag}
-                      />
-                    </div>
-
-                    <SubmitButton
-                      isSaving={isSaving[otherAppointment.id] || false}
-                      submit={() => saveComment(otherAppointment.id, uuid)}
-                      text="Post comment"
-                    />
                   </div>
                 </div>
               </div>

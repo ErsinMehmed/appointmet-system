@@ -2,11 +2,13 @@ import { makeObservable, observable, action } from "mobx";
 import Swal from "sweetalert2";
 import axios from "axios";
 
+import commentApi from "../api/Comment";
+import AppointmentAction from "./Appointment";
+
 import { rules } from "../rules/commentFormRules";
 import { validateFields } from "../validations";
 import { message } from "../utils";
 import { path } from "../config";
-import AppointmentAction from "../actions/Appointment";
 
 class Comment {
   comments = {};
@@ -51,7 +53,7 @@ class Comment {
     this.errorsBag = errorsBag;
   };
 
-  saveComment = (appointmentId, uuid) => {
+  saveComment = async (appointmentId, uuid) => {
     this.setIsSaving((prevIsSavingMap) => ({
       ...prevIsSavingMap,
       [appointmentId]: true,
@@ -81,8 +83,8 @@ class Comment {
     data.append("date", currentDate.toISOString().split("T")[0]);
 
     // Send a POST request to create record.
-    axios
-      .post(`${path}/api/comments`, data)
+    await commentApi
+      .createCommentApi(data)
       .then((response) => {
         message(
           "success",
@@ -128,11 +130,9 @@ class Comment {
   };
 
   // Update comment
-  updateComment = (commentId, uuid) => {
-    axios
-      .put(`${path}/api/comments/${commentId}`, {
-        text: this.editedCommentText,
-      })
+  updateComment = async (commentId, uuid) => {
+    await commentApi
+      .updateCommentApi({ text: this.editedCommentText }, commentId)
       .then((response) => {
         message(
           "success",
@@ -169,10 +169,10 @@ class Comment {
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        axios
-          .delete(`${path}/api/comments/${commentId}`)
+        await commentApi
+          .deleteCommentApi(commentId)
           .then((response) => {
             message(
               "success",

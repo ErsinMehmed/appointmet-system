@@ -1,11 +1,12 @@
 import { makeObservable, observable, action } from "mobx";
 import Swal from "sweetalert2";
-import axios from "axios";
+
+import appointmentApi from "../api/appointment";
+import roomApi from "../api/Room";
 
 import { rules } from "../rules/appointmentFormRules";
 import { validateFields } from "../validations";
 import { message } from "../utils";
-import { path } from "../config";
 
 class Appointment {
   formData = {
@@ -133,64 +134,33 @@ class Appointment {
   };
 
   // Get all rooms data from controller
-  fetchRoom = () => {
-    axios
-      .get(`${path}/api/rooms`)
-      .then((response) => {
-        this.setRoom(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  fetchRoom = async () => {
+    this.setRoom(await roomApi.fetchAllRoomsApi());
   };
 
   // Get appointment data from controller
-  fetchAppointmentData = (uuid) => {
-    axios
-      .get(`${path}/api/appointments/show/${uuid}`)
-      .then((response) => {
-        const {
-          entity,
-          otherAppointments,
-          comments,
-          commentOtherAppointments,
-        } = response.data;
-        this.setEntity(entity);
-        this.setOtherAppointments(otherAppointments);
-        this.setEntityComments(comments);
-        this.setCommentOtherAppointments(commentOtherAppointments);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  fetchAppointmentData = async (uuid) => {
+    const { entity, otherAppointments, comments, commentOtherAppointments } =
+      await appointmentApi.fetchAppointmentDataApi(uuid);
+
+    this.setEntity(entity);
+    this.setOtherAppointments(otherAppointments);
+    this.setEntityComments(comments);
+    this.setCommentOtherAppointments(commentOtherAppointments);
   };
 
   // Get appointment data from controller
-  fetchAppointment = (uuid) => {
-    axios
-      .get(`${path}/api/appointments/edit/${uuid}`)
-      .then((response) => {
-        this.setEntity(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  fetchAppointment = async (uuid) => {
+    this.setEntity(await appointmentApi.fetchAppointmentApi(uuid));
   };
 
   // Get all appointments data from controller
-  fetchAllAppointments = () => {
-    axios
-      .get(`${path}/api/appointments`)
-      .then((response) => {
-        this.setEntities(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  fetchAllAppointments = async () => {
+    this.setEntities(await appointmentApi.fetchAllAppointmentApi());
   };
 
   // Save record
-  saveRecord = () => {
+  saveRecord = async () => {
     this.setIsSaving(true);
     const data = new FormData();
     const errors = validateFields(this.formData, rules);
@@ -208,8 +178,8 @@ class Appointment {
     data.append("room_id", this.formData.room_id);
 
     // Send a POST request to store form data.
-    axios
-      .post(`${path}/api/appointments`, data)
+    await appointmentApi
+      .createAppointmentApi(data)
       .then((response) => {
         message(
           "success",
@@ -247,7 +217,7 @@ class Appointment {
   };
 
   // Update record
-  updateRecord = (uuid) => {
+  updateRecord = async (uuid) => {
     this.setIsSaving(true);
 
     const errors = validateFields(this.formData, rules);
@@ -267,8 +237,8 @@ class Appointment {
     };
 
     // Send a PUT request to update form data.
-    axios
-      .put(`${path}/api/appointments/${uuid}`, data)
+    await appointmentApi
+      .updateAppointmentApi(data, uuid)
       .then((response) => {
         message(
           "success",
@@ -305,28 +275,24 @@ class Appointment {
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        axios
-          .delete(`${path}/api/appointments/${uuid}`)
-          .then((response) => {
-            message(
-              "success",
-              response.data ?? "Appointment has been deleted successfully!",
-              false,
-              false,
-              1000
-            );
-
-            this.fetchAllAppointments();
-          })
-          .catch((error) => {
-            if ((error.response.status = 404)) {
-              this.setErrorsBag(["No appointment found"]);
-            }
-
-            message("error", "Oops, Something went wrong!", false, false, 1000);
-          });
+        try {
+          const response = await appointmentApi.deleteAppointmentApi(uuid);
+          message(
+            "success",
+            response.data ?? "Appointment has been deleted successfully!",
+            false,
+            false,
+            1000
+          );
+          this.fetchAllAppointments();
+        } catch (error) {
+          if (error.response && error.response.status === 404) {
+            this.setErrorsBag(["No appointment found"]);
+          }
+          message("error", "Oops, Something went wrong!", false, false, 1000);
+        }
       }
     });
   };
