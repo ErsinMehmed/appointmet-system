@@ -16,8 +16,6 @@ import CommentAction from "../actions/Comment";
 
 function ShowAppointment() {
   const uuid = useParams().id;
-  const [editingCommentId, setEditingCommentId] = useState(null);
-  const [editedCommentText, setEditedCommentText] = useState("");
   const {
     entity,
     otherAppointments,
@@ -30,24 +28,21 @@ function ShowAppointment() {
     isSaving,
     comments,
     errorsBag,
+    editingCommentId,
+    editedCommentText,
     setComments,
-    setErrorsBag,
+    updateComment,
+    setEditingCommentId,
+    setEditedCommentText,
     saveComment,
     deleteComment,
+    cancelEditing,
   } = CommentAction;
 
   // Fetch the appointment list upon component mount
   useEffect(() => {
     fetchAppointmentData(uuid);
   }, []);
-
-  // Update form data state by setting the value
-  const handleInputChange = (value, appointmentId) => {
-    setComments({
-      ...comments[appointmentId],
-      [appointmentId]: value,
-    });
-  };
 
   const startEditing = (commentId) => {
     const comment = entityComments.find((c) => c.id === commentId);
@@ -58,38 +53,12 @@ function ShowAppointment() {
     }
   };
 
-  const updateComment = (commentId) => {
-    axios
-      .put(`${path}/api/comments/${commentId}`, { text: editedCommentText })
-      .then((response) => {
-        message(
-          "success",
-          response.data ?? "Comment has been updated successfully!",
-          true
-        );
-        setEditingCommentId(null);
-        setEditedCommentText("");
-        fetchAppointmentData();
-      })
-      .catch((error) => {
-        if (
-          (error.response.status =
-            400 &&
-            error.response.data.errors &&
-            error.response.data.errors.length > 0)
-        ) {
-          setErrorsBag(error.response.data.errors);
-        } else if ((error.response.status = 404)) {
-          setErrorsBag(["No comment found"]);
-        } else {
-          setErrorsBag(["Oops, something went wrong!"]);
-        }
-      });
-  };
-
-  const cancelEditing = () => {
-    setEditingCommentId(null);
-    setEditedCommentText("");
+  // Update form data state by setting the value
+  const handleInputChange = (value, appointmentId) => {
+    setComments({
+      ...comments[appointmentId],
+      [appointmentId]: value,
+    });
   };
 
   // Render the spinner while loading
@@ -171,7 +140,7 @@ function ShowAppointment() {
                             <div>
                               <button
                                 className="btn btn-success mx-1"
-                                onClick={() => updateComment(comment.id)}
+                                onClick={() => updateComment(comment.id, uuid)}
                               >
                                 Save
                               </button>
@@ -314,7 +283,9 @@ function ShowAppointment() {
 
                                     <button
                                       className="btn btn-primary mx-1"
-                                      onClick={() => deleteComment(comment.id)}
+                                      onClick={() =>
+                                        deleteComment(comment.id, uuid)
+                                      }
                                     >
                                       Edit
                                     </button>

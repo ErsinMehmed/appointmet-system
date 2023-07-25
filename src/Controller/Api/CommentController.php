@@ -54,14 +54,6 @@ class CommentController extends AbstractController
         $commentData = (array)json_decode($request->getContent());
         $comment = $updateManagerService->updateComment($id, $commentData);
 
-        if (is_array($comment)) {
-            $comment = (object)$comment;
-        }
-
-        if (count($comment->errors)) {
-            return $this->json(['errors' => $comment->errors], 400);
-        }
-
         if (!$comment) {
             return $this->json(404);
         }

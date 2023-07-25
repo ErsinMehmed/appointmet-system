@@ -13,17 +13,31 @@ class Comment {
   entity = [];
   errorsBag = [];
   isSaving = false;
+  editingCommentId = null;
+  editedCommentText = "";
 
   constructor() {
     makeObservable(this, {
       comments: observable,
       isSaving: observable,
       errorsBag: observable,
+      editingCommentId: observable,
+      editedCommentText: observable,
       setIsSaving: action,
       setComments: action,
       setErrorsBag: action,
+      setEditingCommentId: action,
+      setEditedCommentText: action,
     });
   }
+
+  setEditedCommentText = (editedCommentText) => {
+    this.editedCommentText = editedCommentText;
+  };
+
+  setEditingCommentId = (editingCommentId) => {
+    this.editingCommentId = editingCommentId;
+  };
 
   setIsSaving = (isSaving) => {
     this.isSaving = isSaving;
@@ -108,7 +122,45 @@ class Comment {
       });
   };
 
-  // Delete delete comment
+  cancelEditing = () => {
+    this.setEditingCommentId(null);
+    this.setEditedCommentText("");
+  };
+
+  // Update comment
+  updateComment = (commentId, uuid) => {
+    axios
+      .put(`${path}/api/comments/${commentId}`, {
+        text: this.editedCommentText,
+      })
+      .then((response) => {
+        message(
+          "success",
+          response.data ?? "Comment has been updated successfully!",
+          true
+        );
+        this.setEditingCommentId(null);
+        this.setEditedCommentText("");
+
+        AppointmentAction.fetchAppointmentData(uuid);
+      })
+      .catch((error) => {
+        if (
+          (error.response.status =
+            400 &&
+            error.response.data.errors &&
+            error.response.data.errors.length > 0)
+        ) {
+          this.setErrorsBag(error.response.data.errors);
+        } else if ((error.response.status = 404)) {
+          this.setErrorsBag(["No comment found"]);
+        } else {
+          this.setErrorsBag(["Oops, something went wrong!"]);
+        }
+      });
+  };
+
+  // Delete comment
   deleteComment = (commentId, uuid) => {
     Swal.fire({
       title: "Are you sure you want to delete this comment?",
