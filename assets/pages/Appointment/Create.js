@@ -1,14 +1,13 @@
 import React, { useEffect } from "react";
-import { useParams } from "react-router-dom";
 import { observer } from "mobx-react-lite";
 
-import BackButton from "../components/BackButton";
-import ErrorAlert from "../components/ErrorAlert";
-import Input from "../components/Input";
-import Select from "../components/Select";
-import SubmitButton from "../components/SubmitButton";
-import Textarea from "../components/Textarea";
-import AppointmentAction from "../actions/Appointment";
+import BackButton from "../../components/BackButton";
+import ErrorAlert from "../../components/ErrorAlert";
+import Input from "../../components/Input";
+import Select from "../../components/Select";
+import SubmitButton from "../../components/SubmitButton";
+import Textarea from "../../components/Textarea";
+import AppointmentAction from "../../actions/Appointment";
 
 function AddAppointment() {
   const {
@@ -31,7 +30,7 @@ function AddAppointment() {
     });
 
     fetchRoom();
-  }, []);
+  }, [setFormData, fetchRoom]);
 
   // Update form data state by setting the value
   const handleInputChange = (name, value) => {

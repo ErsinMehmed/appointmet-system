@@ -39,7 +39,7 @@ class DataValidatorService
         $validator = Validation::createValidator();
 
         $constraints = new Assert\Collection([
-            'text' => new Assert\NotBlank(['message' => 'text is required.']),
+            'text' => new Assert\NotBlank(['message' => 'Text is required.']),
             'date' => [
                 new Assert\NotBlank(['message' => 'Date is required.']),
                 new Assert\DateTime([
@@ -48,6 +48,18 @@ class DataValidatorService
                 ]),
             ],
             'appointment_id' => new Assert\NotBlank(['message' => 'Appointment is required.']),
+        ]);
+
+        return $validator->validate($data, $constraints);
+    }
+
+    public function validateRoomData(array $data)
+    {
+        $validator = Validation::createValidator();
+
+        $constraints = new Assert\Collection([
+            'name' => new Assert\NotBlank(['message' => 'Name is required.']),
+            'number' => new Assert\NotBlank(['message' => 'Number is required.']),
         ]);
 
         return $validator->validate($data, $constraints);

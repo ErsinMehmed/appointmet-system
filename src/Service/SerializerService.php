@@ -24,6 +24,7 @@ class SerializerService
     {
         return [
             'id' => $room->getId(),
+            'name' => $room->getName(),
             'number' => $room->getNumber(),
         ];
     }

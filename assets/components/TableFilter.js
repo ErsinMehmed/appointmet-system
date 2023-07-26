@@ -47,7 +47,7 @@ const TableFilter = (props) => {
         value={props.perPage}
         onChange={(event) => props.setPerPage(event)}
         id="perPage"
-        options={[5, 10, 20, 30, 50]}
+        options={[5, 10, 15, 20]}
       />
     </div>
   );

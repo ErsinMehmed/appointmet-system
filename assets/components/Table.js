@@ -14,14 +14,14 @@ const Table = (props) => {
       </thead>
 
       <tbody>
-        {!props.data.length ? (
+        {!props.data.entity?.length ? (
           <tr>
-            <td className="text-center" colSpan={props.columns.length + 1}>
+            <td className="text-center py-3" colSpan={props.columns.length + 1}>
               No data found.
             </td>
           </tr>
         ) : (
-          props.data.map((row, index) => (
+          props.data.entity.map((row, index) => (
             <tr key={index}>
               {Object.entries(row).map(([key, value], index) => {
                 if (key === "name") {

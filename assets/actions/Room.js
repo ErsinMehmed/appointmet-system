@@ -1,159 +1,41 @@
 import { makeObservable, observable, action } from "mobx";
 import Swal from "sweetalert2";
 
-import appointmentApi from "../api/Appointment";
 import roomApi from "../api/Room";
 
-import { rules } from "../rules/appointmentForm";
+import { rules } from "../rules/roomForm";
 import { validateFields } from "../validations";
 import { message } from "../utils";
 
-class Appointment {
+class Room {
   formData = {
     name: "",
-    personal_number: null,
-    time: "",
-    description: "",
-    room_id: null,
+    number: null,
   };
 
   entity = [];
-  entities = [];
   isSaving = false;
   errorsBag = [];
-  room = [];
-  dateFrom = "";
-  dateTo = "";
-  personalNumber = "";
-  currentPage = 1;
-  name = "";
-  perPage = 10;
-  otherAppointments = [];
-  entityComments = [];
-  commentOtherAppointments = [];
 
   constructor() {
     makeObservable(this, {
-      perPage: observable,
-      name: observable,
-      dateFrom: observable,
-      dateTo: observable,
-      personalNumber: observable,
-      currentPage: observable,
-      entity: observable,
-      entities: observable,
       formData: observable,
+      entity: observable,
       isSaving: observable,
       errorsBag: observable,
-      room: observable,
-      otherAppointments: observable,
-      entityComments: observable,
-      commentOtherAppointments: observable,
-      setPerPage: action,
-      setName: action,
-      setDateFrom: action,
-      setDateTo: action,
-      setCurrentPage: action,
-      setPersonalNumber: action,
-      setEntity: action,
-      setEntities: action,
       setFormData: action,
+      setEntity: action,
       setIsSaving: action,
       setErrorsBag: action,
-      setRoom: action,
-      setOtherAppointments: action,
-      setEntityComments: action,
-      setCommentOtherAppointments: action,
     });
   }
 
-  setOtherAppointments = (otherAppointments) => {
-    this.otherAppointments = otherAppointments;
-  };
-
-  setEntityComments = (entityComments) => {
-    this.entityComments = entityComments;
-  };
-
-  setCommentOtherAppointments = (commentOtherAppointments) => {
-    this.commentOtherAppointments = commentOtherAppointments;
-  };
-
-  setPerPage = (perPage) => {
-    this.perPage = perPage;
-    this.fetchAllAppointments(
-      this.currentPage,
-      perPage,
-      this.personalNumber,
-      this.name,
-      this.dateFrom,
-      this.dateTo
-    );
-  };
-
-  setName = (name) => {
-    this.name = name;
-    this.fetchAllAppointments(
-      this.currentPage,
-      this.perPage,
-      this.personalNumber,
-      name,
-      this.dateFrom,
-      this.dateTo
-    );
-  };
-
-  setCurrentPage = (currentPage) => {
-    this.currentPage = currentPage;
-  };
-
-  setPersonalNumber = (personalNumber) => {
-    this.personalNumber = personalNumber;
-    this.fetchAllAppointments(
-      this.currentPage,
-      this.perPage,
-      personalNumber,
-      this.name,
-      this.dateFrom,
-      this.dateTo
-    );
-  };
-
-  setDateTo = (dateTo) => {
-    this.dateTo = dateTo;
-
-    this.fetchAllAppointments(
-      this.currentPage,
-      this.perPage,
-      personalNumber,
-      this.name,
-      this.dateFrom,
-      dateTo
-    );
-  };
-
-  setDateFrom = (dateFrom) => {
-    this.dateFrom = dateFrom;
-    this.fetchAllAppointments(
-      this.currentPage,
-      this.perPage,
-      personalNumber,
-      this.name,
-      dateFrom,
-      this.dateTo
-    );
+  setFormData = (formData) => {
+    this.formData = formData;
   };
 
   setEntity = (entity) => {
     this.entity = entity;
-  };
-
-  setEntities = (entities) => {
-    this.entities = entities;
-  };
-
-  setFormData = (formData) => {
-    this.formData = formData;
   };
 
   setIsSaving = (isSaving) => {
@@ -162,10 +44,6 @@ class Appointment {
 
   setErrorsBag = (errorsBag) => {
     this.errorsBag = errorsBag;
-  };
-
-  setRoom = (room) => {
-    this.room = room;
   };
 
   // Get all rooms data from controller
@@ -223,27 +101,21 @@ class Appointment {
     }
 
     data.append("name", this.formData.name);
-    data.append("personal_number", this.formData.personal_number);
-    data.append("time", this.formData.time);
-    data.append("description", this.formData.description);
-    data.append("room_id", this.formData.room_id);
+    data.append("number", this.formData.number);
 
     // Send a POST request to store form data.
-    await appointmentApi
-      .createAppointmentApi(data)
+    await roomApi
+      .createRoomApi(data)
       .then((response) => {
         message(
           "success",
-          response ?? "Appointment has been added successfully!",
+          response ?? "Room has been added successfully!",
           true
         );
         this.setIsSaving(false);
         this.setFormData({
           name: "",
-          personal_number: null,
-          time: "",
-          description: "",
-          room_id: null,
+          number: null,
         });
         this.setErrorsBag([]);
         this.setIsSaving(false);
@@ -256,9 +128,7 @@ class Appointment {
         ) {
           this.setErrorsBag(error.response.data.errors);
         } else if (error.response.status === 404) {
-          this.setErrorsBag([
-            "An error occurred while creating the appointment",
-          ]);
+          this.setErrorsBag(["An error occurred while creating the room"]);
         } else {
           this.setErrorsBag(["Oops, something went wrong!"]);
         }
@@ -346,44 +216,6 @@ class Appointment {
       }
     });
   };
-
-  // Handle next page
-  handleNextPage = () => {
-    this.setCurrentPage(this.currentPage + 1);
-    this.fetchAllAppointments(
-      this.currentPage,
-      this.perPage,
-      this.personalNumber,
-      this.name,
-      this.dateFrom,
-      this.dateTo
-    );
-  };
-
-  // Handle prev page
-  handlePrevPage = () => {
-    this.setCurrentPage(this.currentPage - 1);
-    this.fetchAllAppointments(
-      this.currentPage,
-      this.perPage,
-      this.personalNumber,
-      this.name,
-      this.dateFrom,
-      this.dateTo
-    );
-  };
-
-  handlePageClick = (page) => {
-    this.setCurrentPage(page);
-    this.fetchAllAppointments(
-      page,
-      this.perPage,
-      this.personalNumber,
-      this.name,
-      this.dateFrom,
-      this.dateTo
-    );
-  };
 }
 
-export default new Appointment();
+export default new Room();

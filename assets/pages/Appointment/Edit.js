@@ -2,14 +2,14 @@ import React, { useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { useParams } from "react-router-dom";
 
-import BackButton from "../components/BackButton";
-import ErrorAlert from "../components/ErrorAlert";
-import Input from "../components/Input";
-import Select from "../components/Select";
-import Loader from "../components/Loader";
-import SubmitButton from "../components/SubmitButton";
-import Textarea from "../components/Textarea";
-import AppointmentAction from "../actions/Appointment";
+import BackButton from "../../components/BackButton";
+import ErrorAlert from "../../components/ErrorAlert";
+import Input from "../../components/Input";
+import Select from "../../components/Select";
+import Loader from "../../components/Loader";
+import SubmitButton from "../../components/SubmitButton";
+import Textarea from "../../components/Textarea";
+import AppointmentAction from "../../actions/Appointment";
 
 function EditAppointment() {
   const uuid = useParams().id;
@@ -41,7 +41,7 @@ function EditAppointment() {
           ? new Date(entity.appointment.time).toISOString().split("T")[0]
           : "",
         description: entity.appointment?.description,
-        room_id: entity.room?.number,
+        room_id: entity.room?.id,
       });
     }
   }, [entity]);
@@ -61,7 +61,7 @@ function EditAppointment() {
 
   return (
     <div className="container">
-      <h2 className="text-center mt-5 mb-3">Add Appointment</h2>
+      <h2 className="text-center mt-5 mb-3">Edit Appointment</h2>
 
       <div className="card">
         <div className="card-header">

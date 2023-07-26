@@ -25,15 +25,16 @@ class AppointmentSeeder extends Fixture
         $faker = Factory::create();
         $entities = [];
 
-        for ($i = 1; $i <= 50; $i++) {
+        for ($i = 1; $i <= 100; $i++) {
             $room = new Room();
+            $room->setName('Room ' . $i);
             $room->setNumber($i);
             $manager->persist($room);
         }
-        
+
         $manager->flush();
 
-        for ($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 30000; $i++) {
             $appointment = new Appointment();
             $appointment->setUuid(Uuid::uuid4()->toString());
             $appointment->setName($faker->name);

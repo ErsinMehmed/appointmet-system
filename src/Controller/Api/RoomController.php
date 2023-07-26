@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Room;
+use App\Service\SerializerService;
+use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +19,7 @@ class RoomController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\Response
      */
     #[Route('/rooms', name: 'room_app', methods: 'GET')]
-    public function index(ManagerRegistry $doctrine): Response
+    public function index(SerializerService $serializerService, ManagerRegistry $doctrine): Response
     {
         $rooms = $doctrine
             ->getRepository(Room::class)
@@ -26,17 +28,37 @@ class RoomController extends AbstractController
         $data = [];
 
         foreach ($rooms as $room) {
-            $data[] = $this->serializeData($room);
+            $data[] = $serializerService->serializeRoom($room);
         }
 
         return $this->json($data);
     }
 
-    private function serializeData(Room $room): array
+    /**
+     * Store function
+     *
+     * @param \Doctrine\Persistence\ManagerRegistry $doctrine
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    #[Route('/rooms', name: 'add_room', methods: 'POST')]
+    public function store(Request $request): Response
     {
-        return [
-            'id' => $room->getId(),
-            'number' => $room->getNumber(),
-        ];
+        $roomData = $request->request->all();
+        $room = $storeManagerService->storeRoom($roomData);
+
+        if (is_array($room)) {
+            $room = (object)$room;
+        }
+
+        if (count($room->errors) > 0) {
+            return $this->json(['errors' => $room->errors], 400);
+        }
+
+        if (!$room) {
+            return $this->json(404);
+        }
+
+        return $this->json('New room has been added successfully!');
     }
 }

@@ -5,10 +5,9 @@ import axios from "axios";
 import commentApi from "../api/Comment";
 import AppointmentAction from "./Appointment";
 
-import { rules } from "../rules/commentFormRules";
+import { rules } from "../rules/commentForm";
 import { validateFields } from "../validations";
 import { message } from "../utils";
-import { path } from "../config";
 
 class Comment {
   comments = {};
@@ -88,7 +87,7 @@ class Comment {
       .then((response) => {
         message(
           "success",
-          response.data ?? "Comments has been added successfully!",
+          response ?? "Comment has been added successfully!",
           true
         );
         this.setErrorsBag([]);
@@ -136,7 +135,7 @@ class Comment {
       .then((response) => {
         message(
           "success",
-          response.data ?? "Comment has been updated successfully!",
+          response ?? "Comment has been updated successfully!",
           true
         );
         this.setEditingCommentId(null);
@@ -176,10 +175,10 @@ class Comment {
           .then((response) => {
             message(
               "success",
-              response.data ?? "Comment has been deleted successfully!",
+              response ?? "Comment has been deleted successfully!",
               false,
               false,
-              1000
+              2000
             );
 
             AppointmentAction.fetchAppointmentData(uuid);

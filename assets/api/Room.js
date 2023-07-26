@@ -10,6 +10,15 @@ class Room {
       return error;
     }
   };
+
+  createRoomApi = async (data) => {
+    try {
+      const response = await axios.post(`${path}/api/rooms`, data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
 }
 
 export default new Room();

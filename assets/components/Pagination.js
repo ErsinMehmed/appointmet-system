@@ -32,7 +32,21 @@ function Pagination(props) {
   }
 
   return (
-    <div className="pagination">
+    <div className="d-flex align-items-center justify-content-end">
+      <div className="me-2">
+        Showing{" "}
+        <span className="fw-bold">
+          {props.currentPage * props.perPage - props.perPage + 1}
+        </span>{" "}
+        to{" "}
+        <span className="fw-bold">
+          {props.totalPages == props.currentPage
+            ? props.totalItems
+            : props.currentPage * props.perPage}
+        </span>{" "}
+        of <span className="fw-bold">{props.totalItems}</span> Entries
+      </div>
+
       <PrimaryButton
         onClick={() => props.handlePageClick(1)}
         disabled={props.currentPage < 4}

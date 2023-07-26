@@ -9,8 +9,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Entity\Appointment;
 use App\Service\DeleteAppointmentManagerService;
+use App\Service\PaginationService;
 use App\Service\SerializerService;
 use App\Service\StoreAppointmentManagerService;
+use App\Service\TableFilterService;
 use App\Service\UpdateAppointmentManagerService;
 
 class AppointmentController extends AbstractController
@@ -22,8 +24,15 @@ class AppointmentController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\Response
      */
     #[Route('/appointments', name: 'appointment_app', methods: 'GET')]
-    public function index(SerializerService $serializerService, ManagerRegistry $doctrine): Response
+    public function index(Request $request, SerializerService $serializerService, TableFilterService $tableFilterService, PaginationService $paginationService, ManagerRegistry $doctrine): Response
     {
+        $perPage = $request->query->getInt('per_page', 10);
+        $currentPage = $request->query->getInt('page', 1);
+        $personalNumber = $request->query->getInt('personal_number');
+        $name = $request->query->get('name', '');
+        $dateFrom = $request->query->get('date_from', '');
+        $dateTo = $request->query->get('date_to', '');
+
         $appointments = $doctrine
             ->getRepository(Appointment::class)
             ->findAll();
@@ -43,8 +52,14 @@ class AppointmentController extends AbstractController
             $data[] = $appointmentData;
         }
 
-        return $this->json($data);
+        $filteredData = $tableFilterService->filterData($data, $personalNumber, $name, $dateFrom, $dateTo);
+
+        $paginationResult = $paginationService->paginate($filteredData, $currentPage, $perPage);
+
+        return $this->json($paginationResult);
     }
+
+
 
     /**
      * Store function
@@ -71,7 +86,7 @@ class AppointmentController extends AbstractController
             return $this->json(404);
         }
 
-        return $this->json('New appointment has been added successfully');
+        return $this->json('New appointment has been added successfully!');
     }
 
     /**
@@ -197,7 +212,7 @@ class AppointmentController extends AbstractController
             return $this->json(404);
         }
 
-        return $this->json('Appointment has been updated successfully');
+        return $this->json('Appointment has been updated successfully!');
     }
 
     /**
@@ -216,6 +231,6 @@ class AppointmentController extends AbstractController
             return $this->json(404);
         }
 
-        return $this->json('Deleted a appointment successfully');
+        return $this->json('Appointment has been deleted successfully!');
     }
 }

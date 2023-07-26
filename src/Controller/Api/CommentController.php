@@ -37,7 +37,7 @@ class CommentController extends AbstractController
             return $this->json(404);
         }
 
-        return $this->json('New comment has been added successfully');
+        return $this->json('Comment has been added successfully!');
     }
 
     /**
@@ -58,7 +58,7 @@ class CommentController extends AbstractController
             return $this->json(404);
         }
 
-        return $this->json('Comment has been updated successfully');
+        return $this->json('Comment has been updated successfully!');
     }
 
     /**
@@ -77,6 +77,6 @@ class CommentController extends AbstractController
             return $this->json(404);
         }
 
-        return $this->json('Deleted a comment successfully');
+        return $this->json('Comment has been deleted successfully!');
     }
 }
