@@ -8,19 +8,21 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Entity\Appointment;
-use App\Service\DeleteAppointmentManagerService;
+use App\Service\AppointmentService;
 use App\Service\PaginationService;
 use App\Service\SerializerService;
-use App\Service\StoreAppointmentManagerService;
 use App\Service\TableFilterService;
-use App\Service\UpdateAppointmentManagerService;
 
 class AppointmentController extends AbstractController
 {
     /**
      * Index function
      *
+     * @param \App\Services\SerializerService $serializerService
+     * @param \App\Services\TableFilterService $tableFilterService
+     * @param \App\Services\PaginationService $paginationService
      * @param \Doctrine\Persistence\ManagerRegistry $doctrine
+     * @param \Symfony\Component\HttpFoundation\Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
     #[Route('/appointments', name: 'appointment_app', methods: 'GET')]
@@ -33,9 +35,10 @@ class AppointmentController extends AbstractController
         $dateFrom = $request->query->get('date_from', '');
         $dateTo = $request->query->get('date_to', '');
 
-        $appointments = $doctrine
-            ->getRepository(Appointment::class)
-            ->findAll();
+        $appointments = $tableFilterService->filterAppointmentData($personalNumber, $name, $dateFrom, $dateTo, $currentPage, $perPage);
+
+        $totalItems = count($appointments) != $perPage ? count($appointments) : $doctrine->getManager()->getRepository(Appointment::class)->getCount();
+        $totalPages = max(ceil($totalItems / $perPage), 1);
 
         $data = [];
 
@@ -52,27 +55,36 @@ class AppointmentController extends AbstractController
             $data[] = $appointmentData;
         }
 
-        $filteredData = $tableFilterService->filterData($data, $personalNumber, $name, $dateFrom, $dateTo);
+        if (count($appointments) != $perPage) {
+            $data = $paginationService->paginate($data, $currentPage, $perPage);
+        } else {
+            $data =  [
+                'entity' => $data,
+                'pagination' => [
+                    'current_page' => $currentPage,
+                    'total_pages' => $totalPages,
+                    'total_items' => $totalItems,
+                    'per_page' => $perPage,
 
-        $paginationResult = $paginationService->paginate($filteredData, $currentPage, $perPage);
+                ],
+            ];
+        }
 
-        return $this->json($paginationResult);
+        return $this->json($data);
     }
-
-
 
     /**
      * Store function
      *
-     * @param \Doctrine\Persistence\ManagerRegistry $doctrine
+     * @param \App\Services\AppointmentService $createManagerService
      * @param \Symfony\Component\HttpFoundation\Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
     #[Route('/appointments', name: 'add_appointment', methods: 'POST')]
-    public function store(StoreAppointmentManagerService $storeManagerService, Request $request): Response
+    public function store(AppointmentService $createManagerService, Request $request): Response
     {
         $appointmentData = $request->request->all();
-        $appointment = $storeManagerService->storeAppointment($appointmentData);
+        $appointment = $createManagerService->create($appointmentData);
 
         if (is_array($appointment)) {
             $appointment = (object)$appointment;
@@ -189,16 +201,16 @@ class AppointmentController extends AbstractController
     /**
      * Update function
      *
-     * @param \Doctrine\Persistence\ManagerRegistry $doctrine
+     * @param \App\Services\AppointmentService $updateManagerService
      * @param \Symfony\Component\HttpFoundation\Request $request
      * @param string $uuid
      * @return \Symfony\Component\HttpFoundation\Response
      */
     #[Route('/appointments/{uuid}', name: 'appointment_update', methods: 'PUT')]
-    public function update(UpdateAppointmentManagerService $updateManagerService, Request $request, string $uuid): Response
+    public function update(AppointmentService $updateManagerService, Request $request, string $uuid): Response
     {
         $appointmentData = (array)json_decode($request->getContent());
-        $appointment = $updateManagerService->updateAppointment($uuid, $appointmentData);
+        $appointment = $updateManagerService->update($uuid, $appointmentData);
 
         if (is_array($appointment)) {
             $appointment = (object)$appointment;
@@ -218,14 +230,14 @@ class AppointmentController extends AbstractController
     /**
      * Destroy function
      *
-     * @param \Doctrine\Persistence\ManagerRegistry $doctrine
+     * @param \App\Services\AppointmentService $deleteManagerService
      * @param string $uuid
      * @return \Symfony\Component\HttpFoundation\Response
      */
     #[Route('/appointments/{uuid}', name: 'appointment_delete', methods: 'DELETE')]
-    public function destroy(DeleteAppointmentManagerService $deleteManagerService, string $uuid): Response
+    public function destroy(AppointmentService $deleteManagerService, string $uuid): Response
     {
-        $isDeleted = $deleteManagerService->destroy($uuid);
+        $isDeleted = $deleteManagerService->delete($uuid);
 
         if (!$isDeleted) {
             return $this->json(404);

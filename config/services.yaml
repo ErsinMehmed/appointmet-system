@@ -27,21 +27,3 @@ services:
 
   App\Controller\CommentController:
     autowire: true
-
-  App\Service\StoreAppointmentManagerService:
-    autowire: true
-
-  App\Service\UpdateAppointmentManagerService:
-    autowire: true
-
-  App\Service\DeleteAppointmentManagerService:
-    autowire: true
-
-  App\Service\StoreCommentManagerService:
-    autowire: true
-
-  App\Service\UpdateCommentManagerService:
-    autowire: true
-
-  App\Service\DeleteCommentManagerService:
-    autowire: true

@@ -2,27 +2,60 @@
 
 namespace App\Service;
 
+use App\Entity\Appointment;
+use App\Entity\Room;
+use Doctrine\Persistence\ManagerRegistry;
+
 class TableFilterService
 {
-    public function filterData(array $data, string $personalNumber, string $name, string $dateFrom, string $dateTo): array
+    private $doctrine;
+
+    public function __construct(ManagerRegistry $doctrine)
     {
-        $filteredData = [];
+        $this->doctrine = $doctrine;
+    }
 
-        foreach ($data as $item) {
-            if (isset($item['personalNumber']) || isset($item['name'])) {
-                $personalNumberMatch = stripos($item['personalNumber'], $personalNumber) !== false;
-                $nameMatch = stripos($item['name'], $name) !== false;
+    public function filterAppointmentData(string $personalNumber, string $name, string $dateFrom, string $dateTo, int $currentPage, int $perPage): array
+    {
+        $appointmentRepository = $this->doctrine->getManager()->getRepository(Appointment::class);
+        $filteredAppointments = [];
 
-                $itemDate = $item['time']->format("Y-m-d");
-                $fromDateFilter = empty($dateFrom) || $itemDate >= $dateFrom;
-                $toDateFilter = empty($dateTo) || $itemDate <= $dateTo;
-
-                if ($personalNumberMatch && $nameMatch && $fromDateFilter && $toDateFilter) {
-                    $filteredData[] = $item;
-                }
-            }
+        if ($personalNumber) {
+            $filteredAppointments = $appointmentRepository->findByPersonalNumber($personalNumber);
         }
 
-        return $personalNumber || $name || $dateFrom || $dateTo ? $filteredData : $data;
+        if ($name) {
+            $filteredAppointments = $appointmentRepository->findByName($name);
+        }
+
+        if ($dateFrom || $dateTo) {
+            $filteredAppointments = $appointmentRepository->findByDateRange($dateFrom, $dateTo);
+        }
+
+        if (!$personalNumber && !$name && !$dateFrom && !$dateTo) {
+            $filteredAppointments = $appointmentRepository->findPaginatedResults($currentPage, $perPage);
+        }
+
+        return $filteredAppointments;
+    }
+
+    public function filterRoomData(string $name, int $roomNumber): array
+    {
+        $roomRepository = $this->doctrine->getManager()->getRepository(Room::class);
+        $filteredRooms = [];
+
+        if ($name) {
+            $filteredRooms = $roomRepository->findByName($name);
+        }
+
+        if ($roomNumber) {
+            $filteredRooms = $roomRepository->findByRoomNumber($roomNumber);
+        }
+
+        if (!$name && !$roomNumber) {
+            $filteredRooms = $roomRepository->findAll();
+        }
+
+        return $filteredRooms;
     }
 }

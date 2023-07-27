@@ -13,20 +13,32 @@ class Room {
     number: null,
   };
 
-  entity = [];
+  entities = [];
   isSaving = false;
   errorsBag = [];
+  currentPage = 1;
+  perPage = 10;
+  name = "";
+  roomNumber = null;
 
   constructor() {
     makeObservable(this, {
       formData: observable,
-      entity: observable,
+      entities: observable,
       isSaving: observable,
       errorsBag: observable,
+      currentPage: observable,
+      perPage: observable,
+      name: observable,
+      roomNumber: observable,
       setFormData: action,
-      setEntity: action,
+      setEntities: action,
       setIsSaving: action,
       setErrorsBag: action,
+      setCurrentPage: action,
+      setPerPage: action,
+      setName: action,
+      setRoomNumber: action,
     });
   }
 
@@ -34,8 +46,8 @@ class Room {
     this.formData = formData;
   };
 
-  setEntity = (entity) => {
-    this.entity = entity;
+  setEntities = (entities) => {
+    this.entities = entities;
   };
 
   setIsSaving = (isSaving) => {
@@ -46,45 +58,50 @@ class Room {
     this.errorsBag = errorsBag;
   };
 
+  setCurrentPage = (currentPage) => {
+    this.currentPage = currentPage;
+  };
+
+  setPerPage = (perPage) => {
+    this.perPage = perPage;
+    this.fetchAllRooms(this.currentPage, perPage, this.name, this.roomNumber);
+  };
+
+  setName = (name) => {
+    this.name = name;
+    this.fetchAllRooms(this.currentPage, this.perPage, name, this.roomNumber);
+  };
+
+  setRoomNumber = (roomNumber) => {
+    this.roomNumber = roomNumber;
+    this.fetchAllRooms(this.currentPage, this.perPage, this.name, roomNumber);
+  };
+
+  // // Get all rooms data from controller
+  // fetchRoom = async () => {
+  //   this.setRoom(await roomApi.fetchAllRoomsApi());
+  // };
+
+  // // Get appointment data from controller
+  // fetchAppointmentData = async (uuid) => {
+  //   const { entity, otherAppointments, comments, commentOtherAppointments } =
+  //     await appointmentApi.fetchAppointmentDataApi(uuid);
+
+  //   this.setEntity(entity);
+  //   this.setOtherAppointments(otherAppointments);
+  //   this.setEntityComments(comments);
+  //   this.setCommentOtherAppointments(commentOtherAppointments);
+  // };
+
+  // // Get appointment data from controller
+  // fetchAppointment = async (uuid) => {
+  //   this.setEntity(await appointmentApi.fetchAppointmentApi(uuid));
+  // };
+
   // Get all rooms data from controller
-  fetchRoom = async () => {
-    this.setRoom(await roomApi.fetchAllRoomsApi());
-  };
-
-  // Get appointment data from controller
-  fetchAppointmentData = async (uuid) => {
-    const { entity, otherAppointments, comments, commentOtherAppointments } =
-      await appointmentApi.fetchAppointmentDataApi(uuid);
-
-    this.setEntity(entity);
-    this.setOtherAppointments(otherAppointments);
-    this.setEntityComments(comments);
-    this.setCommentOtherAppointments(commentOtherAppointments);
-  };
-
-  // Get appointment data from controller
-  fetchAppointment = async (uuid) => {
-    this.setEntity(await appointmentApi.fetchAppointmentApi(uuid));
-  };
-
-  // Get all appointments data from controller
-  fetchAllAppointments = async (
-    page,
-    perPage,
-    personalNumber,
-    name,
-    dateFrom,
-    dateTo
-  ) => {
+  fetchAllRooms = async (page, perPage, name, roomNumber) => {
     this.setEntities(
-      await appointmentApi.fetchAllAppointmentApi(
-        page,
-        perPage,
-        personalNumber,
-        name,
-        dateFrom,
-        dateTo
-      )
+      await roomApi.fetchAllRoomsApi(page, perPage, name, roomNumber)
     );
   };
 
@@ -188,9 +205,9 @@ class Room {
   };
 
   // Delete record
-  deleteRecord = (uuid) => {
+  deleteRecord = (id) => {
     Swal.fire({
-      title: "Are you sure you want to delete this appointment?",
+      title: "Are you sure you want to delete this room?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
@@ -198,23 +215,64 @@ class Room {
       confirmButtonText: "Yes",
     }).then(async () => {
       try {
-        const response = await appointmentApi.deleteAppointmentApi(uuid);
+        const response = await roomApi.deleteRoomApi(id);
         message(
           "success",
-          response ?? "Appointment has been deleted successfully!",
+          response ?? "Room has been deleted successfully!",
           false,
           false,
           1000
         );
 
-        this.fetchAllAppointments(this.currentPage);
+        this.fetchAllRooms(this.currentPage, this.perPage);
       } catch (error) {
         if (error.response && error.response.status === 404) {
-          this.setErrorsBag(["No appointment found"]);
+          this.setErrorsBag(["No room found"]);
+        } else if (error.response && error.response.status === 500) {
+          message(
+            "error",
+            error.response.data ??
+              "This room can not be deleted! There are appointments scheduled in this room!",
+            true,
+            false
+          );
+        } else {
+          message("error", "Oops, Something went wrong!", false, false, 1000);
         }
-        message("error", "Oops, Something went wrong!", false, false, 1000);
       }
     });
+  };
+
+  // Handle next page
+  handleNextPage = () => {
+    this.setCurrentPage(this.currentPage + 1);
+    this.fetchAllRooms(
+      this.currentPage,
+      this.perPage,
+      this.name,
+      this.roomNumber
+    );
+  };
+
+  // Handle prev page
+  handlePrevPage = () => {
+    this.setCurrentPage(this.currentPage - 1);
+    this.fetchAllRooms(
+      this.currentPage,
+      this.perPage,
+      this.name,
+      this.roomNumber
+    );
+  };
+
+  handlePageClick = (page) => {
+    this.setCurrentPage(page);
+    this.fetchAllRooms(
+      this.currentPage,
+      this.perPage,
+      this.name,
+      this.roomNumber
+    );
   };
 }
 

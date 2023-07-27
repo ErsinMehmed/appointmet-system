@@ -31,7 +31,7 @@ function AddRoom() {
 
       <div className="card">
         <div className="card-header">
-          <BackButton />
+          <BackButton text={"Rooms"} link={"/rooms"} />
         </div>
 
         <div className="card-body">

@@ -24,7 +24,7 @@ class Appointment {
   room = [];
   dateFrom = "";
   dateTo = "";
-  personalNumber = "";
+  personalNumber = null;
   currentPage = 1;
   name = "";
   perPage = 10;
@@ -170,7 +170,7 @@ class Appointment {
 
   // Get all rooms data from controller
   fetchRoom = async () => {
-    this.setRoom(await roomApi.fetchAllRoomsApi());
+    this.setRoom(await roomApi.fetchRoomsApi());
   };
 
   // Get appointment data from controller

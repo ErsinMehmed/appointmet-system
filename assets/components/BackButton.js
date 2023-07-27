@@ -1,13 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-function BackButton() {
+function BackButton(props) {
   return (
     <Link
       className="btn btn-primary mt-2 mb-2 d-flex flex-column align-items-center"
-      to="/"
+      to={props.link || "/"}
     >
-      Back To Appointment List
+      Back To {props.text || "Appointments"} List
     </Link>
   );
 }

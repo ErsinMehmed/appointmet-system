@@ -24,7 +24,7 @@ const Table = (props) => {
           props.data.entity.map((row, index) => (
             <tr key={index}>
               {Object.entries(row).map(([key, value], index) => {
-                if (key === "name") {
+                if (key === "name" && props.appointment) {
                   return (
                     <td key={index}>
                       <Link
@@ -50,13 +50,19 @@ const Table = (props) => {
               <td>
                 <Link
                   className="btn btn-success mx-1"
-                  to={`/appointments/edit/${row.uuid}`}
+                  to={
+                    props.appointment
+                      ? `/appointments/edit/${row.uuid}`
+                      : `/rooms/edit/${row.id}`
+                  }
                 >
                   Edit
                 </Link>
 
                 <button
-                  onClick={() => props.deleteRecord(row.uuid)}
+                  onClick={() =>
+                    props.deleteRecord(props.appointment ? row.uuid : row.id)
+                  }
                   className="btn btn-danger mx-1"
                 >
                   Delete

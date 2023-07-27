@@ -2,25 +2,22 @@
 
 namespace App\Service;
 
-use App\Entity\Appointment;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Entity\Appointment;
 use App\Entity\Comment;
 
-class StoreCommentManagerService
+class CommentService
 {
-    private $validator;
     private $doctrine;
     private $dataValidatorService;
 
-    public function __construct(ValidatorInterface $validator, ManagerRegistry $doctrine, DataValidatorService $dataValidatorService)
+    public function __construct(ManagerRegistry $doctrine, DataValidatorService $dataValidatorService)
     {
-        $this->validator = $validator;
         $this->doctrine = $doctrine;
         $this->dataValidatorService = $dataValidatorService;
     }
 
-    public function storeComment(array $data): array
+    public function create(array $data): array
     {
         $violations = $this->dataValidatorService->validateCommentData($data);
 
@@ -51,5 +48,37 @@ class StoreCommentManagerService
         $entityManager->flush();
 
         return ['comment' => $comment, 'errors' => []];
+    }
+
+
+    public function update(string $id, array $data): ?Comment
+    {
+        $comment = $this->doctrine->getManager()->getRepository(Comment::class)->findOneBy(['id' => $id]);
+
+        if (!$comment) {
+            return null;
+        }
+
+        $comment->setText($data['text']);
+
+        $entityManager = $this->doctrine->getManager();
+        $entityManager->flush();
+
+        return $comment;
+    }
+
+    public function delete(string $id): bool
+    {
+        $comment = $this->doctrine->getManager()->getRepository(Comment::class)->findOneBy(['id' => $id]);
+
+        if (!$comment) {
+            return false;
+        }
+
+        $entityManager = $this->doctrine->getManager();
+        $entityManager->remove($comment);
+        $entityManager->flush();
+
+        return true;
     }
 }

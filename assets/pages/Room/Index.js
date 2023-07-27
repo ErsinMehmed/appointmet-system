@@ -5,88 +5,61 @@ import { Link } from "react-router-dom";
 import Pagination from "../../components/Pagination";
 import Table from "../../components/Table";
 import TableFilter from "../../components/TableFilter";
-import AppointmentAction from "../../actions/Appointment";
+import RoomAction from "../../actions/Room";
 
-function IndexAppointment() {
+function IndexRoom() {
   const {
     entities,
-    dateFrom,
-    dateTo,
-    personalNumber,
-    currentPage,
     name,
+    roomNumber,
+    currentPage,
     perPage,
-    fetchAllAppointments,
+    fetchAllRooms,
     deleteRecord,
-    setDateTo,
-    setDateFrom,
-    setPersonalNumber,
     handlePageClick,
     setName,
+    setRoomNumber,
     setPerPage,
     handleNextPage,
     handlePrevPage,
-  } = AppointmentAction;
+  } = RoomAction;
 
   // Fetch the appointment list upon component mount
   useEffect(() => {
-    fetchAllAppointments(
-      currentPage,
-      perPage,
-      personalNumber,
-      name,
-      dateFrom,
-      dateTo
-    );
+    fetchAllRooms(currentPage, perPage, name, roomNumber);
   }, []);
 
   return (
     <div style={{ background: "#ebf1f2" }}>
       <div className="container pb-2">
-        <h2 className="text-center pt-5 mb-3">Appointment</h2>
+        <h2 className="text-center pt-5 mb-3">Room</h2>
 
         <div className="card">
           <div className="card-header d-flex justify-content-end gap-2">
-            <Link className="btn btn-primary mt-2 mb-2" to="/rooms">
-              Go to Room Table
+            <Link className="btn btn-primary mt-2 mb-2" to="/">
+              Go to Appointment Table
             </Link>
 
-            <Link
-              className="btn btn-primary mt-2 mb-2"
-              to="/appointments/create"
-            >
-              Add Appointment
+            <Link className="btn btn-primary mt-2 mb-2" to="/rooms/create">
+              Add Room
             </Link>
           </div>
 
           <div className="card-body">
             <TableFilter
-              dateFrom={dateFrom}
-              dateTo={dateTo}
               name={name}
-              personalNumber={personalNumber}
-              setDateFrom={setDateFrom}
-              setDateTo={setDateTo}
+              roomNumber={roomNumber}
               setName={setName}
-              setPersonalNumber={setPersonalNumber}
+              setRoomNumber={setRoomNumber}
               perPage={perPage}
               setPerPage={setPerPage}
-              appointmentTable={true}
+              roomTable={true}
             />
 
             <Table
-              columns={[
-                "№",
-                "Name",
-                "Personal number",
-                "Time",
-                "Description",
-                "Room Number",
-                "Action",
-              ]}
+              columns={["№", "Name", "Room number", "Action"]}
               data={entities}
               deleteRecord={deleteRecord}
-              appointment={true}
             />
 
             {entities.pagination?.total_pages > 1 && (
@@ -109,4 +82,4 @@ function IndexAppointment() {
   );
 }
 
-export default observer(IndexAppointment);
+export default observer(IndexRoom);

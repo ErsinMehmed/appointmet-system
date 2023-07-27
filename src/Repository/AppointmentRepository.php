@@ -16,9 +16,12 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class AppointmentRepository extends ServiceEntityRepository
 {
+    private $queryBuilder;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Appointment::class);
+        $this->queryBuilder = $this->createQueryBuilder('a');
     }
 
     public function save(Appointment $entity, bool $flush = false): void
@@ -41,7 +44,7 @@ class AppointmentRepository extends ServiceEntityRepository
 
     public function getClientAppointments(string $personalNumber, \DateTimeInterface $currentDateTime): array
     {
-        return $this->createQueryBuilder('a')
+        return $this->queryBuilder
             ->where('a.personal_number = :personalNumber')
             ->andWhere('a.time > :currentDateTime')
             ->setParameter('personalNumber', $personalNumber)
@@ -50,28 +53,95 @@ class AppointmentRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-//    /**
-//     * @return Appointment[] Returns an array of Appointment objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('a')
-//            ->andWhere('a.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('a.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    public function findByPersonalNumber(int $personalNumber)
+    {
+        return $this->queryBuilder
+            ->andWhere(
+                $this->queryBuilder
+                    ->expr()
+                    ->like('a.personal_number', ':personal_number')
+            )
+            ->setParameter('personal_number', $personalNumber  . '%')
+            ->getQuery()
+            ->getResult();
+    }
 
-//    public function findOneBySomeField($value): ?Appointment
-//    {
-//        return $this->createQueryBuilder('a')
-//            ->andWhere('a.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    public function findByName(string $name)
+    {
+        return $this->queryBuilder
+            ->andWhere(
+                $this->queryBuilder
+                    ->expr()
+                    ->like('a.name', ':name')
+            )
+            ->setParameter('name', '%' . $name . '%')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByDateRange(?string $dateFrom, ?string $dateTo)
+    {
+        if ($dateFrom && $dateTo) {
+            $this->queryBuilder->andWhere('a.time BETWEEN :date_from AND :date_to')
+                ->setParameter('date_from', new \DateTime($dateFrom))
+                ->setParameter('date_to', new \DateTime($dateTo));
+        } else if ($dateFrom) {
+            $this->queryBuilder->andWhere('a.time >= :date_from')
+                ->setParameter('date_from', new \DateTime($dateFrom));
+        } else if ($dateTo) {
+            $this->queryBuilder->andWhere('a.time <= :date_to')
+                ->setParameter('date_to', new \DateTime($dateTo));
+        }
+
+        return $this->queryBuilder->getQuery()->getResult();
+    }
+
+    public function findPaginatedResults($currentPage, $perPage)
+    {
+        $perPage = max(1, min(100, $perPage));
+        $currentPage = max(1, $currentPage);
+
+        $queryBuilder = $this->createQueryBuilder('a');
+
+        $offset = ($currentPage - 1) * $perPage;
+
+        $queryBuilder
+            ->setMaxResults($perPage)
+            ->setFirstResult($offset);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function getCount()
+    {
+        return $this->queryBuilder
+            ->select('COUNT(a.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    //    /**
+    //     * @return Appointment[] Returns an array of Appointment objects
+    //     */
+    //    public function findByExampleField($value): array
+    //    {
+    //        return $this->createQueryBuilder('a')
+    //            ->andWhere('a.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->orderBy('a.id', 'ASC')
+    //            ->setMaxResults(10)
+    //            ->getQuery()
+    //            ->getResult()
+    //        ;
+    //    }
+
+    //    public function findOneBySomeField($value): ?Appointment
+    //    {
+    //        return $this->createQueryBuilder('a')
+    //            ->andWhere('a.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->getQuery()
+    //            ->getOneOrNullResult()
+    //        ;
+    //    }
 }

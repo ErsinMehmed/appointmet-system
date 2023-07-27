@@ -25,7 +25,7 @@ class AppointmentSeeder extends Fixture
         $faker = Factory::create();
         $entities = [];
 
-        for ($i = 1; $i <= 100; $i++) {
+        for ($i = 1; $i <= 500; $i++) {
             $room = new Room();
             $room->setName('Room ' . $i);
             $room->setNumber($i);
@@ -34,7 +34,7 @@ class AppointmentSeeder extends Fixture
 
         $manager->flush();
 
-        for ($i = 0; $i < 30000; $i++) {
+        for ($i = 0; $i < 50000; $i++) {
             $appointment = new Appointment();
             $appointment->setUuid(Uuid::uuid4()->toString());
             $appointment->setName($faker->name);
@@ -63,7 +63,6 @@ class AppointmentSeeder extends Fixture
         }
     }
 
-    // Помощен метод за избиране на случайна стая от базата данни
     private function getRandomRoom(ObjectManager $manager): Room
     {
         $repository = $manager->getRepository(Room::class);
