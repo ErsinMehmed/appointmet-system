@@ -3,18 +3,17 @@
 namespace App\Repository;
 
 use App\Entity\Appointment;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Appointment>
+ * @extends AbstractRepository<Appointment>
  *
  * @method Appointment|null find($id, $lockMode = null, $lockVersion = null)
  * @method Appointment|null findOneBy(array $criteria, array $orderBy = null)
  * @method Appointment[]    findAll()
  * @method Appointment[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class AppointmentRepository extends ServiceEntityRepository
+class AppointmentRepository extends AbstractRepository
 {
     private $queryBuilder;
 
@@ -55,28 +54,12 @@ class AppointmentRepository extends ServiceEntityRepository
 
     public function findByPersonalNumber(int $personalNumber)
     {
-        return $this->queryBuilder
-            ->andWhere(
-                $this->queryBuilder
-                    ->expr()
-                    ->like('a.personal_number', ':personal_number')
-            )
-            ->setParameter('personal_number', $personalNumber  . '%')
-            ->getQuery()
-            ->getResult();
+        return parent::findByLike($this->queryBuilder, 'personal_number', $personalNumber);
     }
 
     public function findByName(string $name)
     {
-        return $this->queryBuilder
-            ->andWhere(
-                $this->queryBuilder
-                    ->expr()
-                    ->like('a.name', ':name')
-            )
-            ->setParameter('name', '%' . $name . '%')
-            ->getQuery()
-            ->getResult();
+        return parent::findByLike($this->queryBuilder, 'name', $name);
     }
 
     public function findByDateRange(?string $dateFrom, ?string $dateTo)
@@ -96,28 +79,14 @@ class AppointmentRepository extends ServiceEntityRepository
         return $this->queryBuilder->getQuery()->getResult();
     }
 
-    public function findPaginatedResults($currentPage, $perPage)
+    public function pagination($currentPage, $perPage)
     {
-        $perPage = max(1, min(100, $perPage));
-        $currentPage = max(1, $currentPage);
-
-        $queryBuilder = $this->createQueryBuilder('a');
-
-        $offset = ($currentPage - 1) * $perPage;
-
-        $queryBuilder
-            ->setMaxResults($perPage)
-            ->setFirstResult($offset);
-
-        return $queryBuilder->getQuery()->getResult();
+        return parent::findPaginatedResults($currentPage, $perPage);
     }
 
-    public function getCount()
+    public function countData()
     {
-        return $this->queryBuilder
-            ->select('COUNT(a.id)')
-            ->getQuery()
-            ->getSingleScalarResult();
+        return parent::getCount($this->queryBuilder);
     }
 
     //    /**

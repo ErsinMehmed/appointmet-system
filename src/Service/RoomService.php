@@ -8,14 +8,27 @@ use App\Entity\Room;
 class RoomService
 {
     private $doctrine;
+
     private $dataValidatorService;
 
+    /**
+     * Constructor of the class.
+     *
+     * @param ManagerRegistry $doctrine
+     * @param DataValidatorService $dataValidatorService
+     */
     public function __construct(ManagerRegistry $doctrine, DataValidatorService $dataValidatorService)
     {
         $this->doctrine = $doctrine;
         $this->dataValidatorService = $dataValidatorService;
     }
 
+    /**
+     * Creates a new room based on the provided data.
+     *
+     * @param array $data
+     * @return array
+     */
     public function create(array $data): array
     {
         $violations = $this->dataValidatorService->validateRoomData($data);
@@ -47,7 +60,12 @@ class RoomService
         return ['room' => $room, 'errors' => []];
     }
 
-
+    /**
+     * Deletes a room based on the provided ID.
+     *
+     * @param string $id
+     * @return bool
+     */
     public function delete(string $id): bool
     {
         $room = $this->doctrine->getManager()->getRepository(Room::class)->findOneBy(['id' => $id]);

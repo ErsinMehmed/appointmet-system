@@ -121,12 +121,11 @@ class Room {
     data.append("number", this.formData.number);
 
     // Send a POST request to store form data.
-    await roomApi
-      .createRoomApi(data)
-      .then((response) => {
+    await roomApi.createRoomApi(data).then((response) => {
+      if (response.status) {
         message(
           "success",
-          response ?? "Room has been added successfully!",
+          response.message ?? "Room has been added successfully!",
           true
         );
         this.setIsSaving(false);
@@ -136,22 +135,11 @@ class Room {
         });
         this.setErrorsBag([]);
         this.setIsSaving(false);
-      })
-      .catch((error) => {
-        if (
-          error.response.status === 400 &&
-          error.response.data.errors &&
-          error.response.data.errors.length > 0
-        ) {
-          this.setErrorsBag(error.response.data.errors);
-        } else if (error.response.status === 404) {
-          this.setErrorsBag(["An error occurred while creating the room"]);
-        } else {
-          this.setErrorsBag(["Oops, something went wrong!"]);
-        }
-
+      } else {
+        this.setErrorsBag(response.errors);
         this.setIsSaving(false);
-      });
+      }
+    });
   };
 
   // Update record
@@ -213,31 +201,26 @@ class Room {
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes",
-    }).then(async () => {
-      try {
-        const response = await roomApi.deleteRoomApi(id);
-        message(
-          "success",
-          response ?? "Room has been deleted successfully!",
-          false,
-          false,
-          1000
-        );
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await roomApi.deleteRoomApi(id);
+          console.log(response);
+          if (response.status) {
+            message(
+              "success",
+              response.message ?? "Room has been deleted successfully!",
+              false,
+              false,
+              2500
+            );
 
-        this.fetchAllRooms(this.currentPage, this.perPage);
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          this.setErrorsBag(["No room found"]);
-        } else if (error.response && error.response.status === 500) {
-          message(
-            "error",
-            error.response.data ??
-              "This room can not be deleted! There are appointments scheduled in this room!",
-            true,
-            false
-          );
-        } else {
-          message("error", "Oops, Something went wrong!", false, false, 1000);
+            this.fetchAllRooms(this.currentPage, this.perPage);
+          } else {
+            message("error", response.message, false, false, 2500);
+          }
+        } catch (error) {
+          message("error", "Oops, Something went wrong!", false, false, 2500);
         }
       }
     });

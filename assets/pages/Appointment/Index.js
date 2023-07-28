@@ -40,6 +40,8 @@ function IndexAppointment() {
     );
   }, []);
 
+  console.table(entities);
+
   return (
     <div style={{ background: "#ebf1f2" }}>
       <div className="container pb-2">

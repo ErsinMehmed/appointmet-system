@@ -24,6 +24,8 @@ function IndexRoom() {
     handlePrevPage,
   } = RoomAction;
 
+  console.table(entities);
+
   // Fetch the appointment list upon component mount
   useEffect(() => {
     fetchAllRooms(currentPage, perPage, name, roomNumber);

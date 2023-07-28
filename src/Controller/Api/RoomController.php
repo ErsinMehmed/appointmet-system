@@ -55,14 +55,14 @@ class RoomController extends AbstractController
         }
 
         if (count($room->errors) > 0) {
-            return $this->json(['errors' => $room->errors], 400);
+            return $this->json(['status' => false, 'errors' => $room->errors]);
         }
 
         if (!$room) {
-            return $this->json(404);
+            return $this->json(['status' => false, 'message' => 'An error occurred while creating the room!']);
         }
 
-        return $this->json('New room has been added successfully!');
+        return $this->json(['status' => true, 'message' => 'Room has been added successfully!']);
     }
 
     /**
@@ -79,12 +79,12 @@ class RoomController extends AbstractController
             $isDeleted = $deleteManagerService->delete($id);
 
             if (!$isDeleted) {
-                return $this->json(404);
+                return $this->json(['status' => false, 'message' => 'No room found!']);
             }
 
-            return $this->json('Room has been deleted successfully!');
+            return $this->json(['status' => true, 'message' => 'Room has been deleted successfully!']);
         } catch (\Exception $e) {
-            return $this->json('This room can not be deleted! There are appointments scheduled in this room!', 500);
+            return $this->json(['status' => false, 'message' => 'This room can not be deleted! There are appointments scheduled in this room!']);
         }
     }
 
@@ -99,14 +99,17 @@ class RoomController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\Response
      */
     #[Route('/all-rooms', name: 'room_table', methods: 'GET')]
-    public function getTable(Request $request, SerializerService $serializerService, TableFilterService $tableFilterService, PaginationService $paginationService): Response
+    public function getTable(Request $request, SerializerService $serializerService, TableFilterService $tableFilterService, PaginationService $paginationService, ManagerRegistry $doctrine): Response
     {
         $perPage = $request->query->getInt('per_page', 10);
         $currentPage = $request->query->getInt('page', 1);
         $name = $request->query->get('name', '');
         $roomNumber = $request->query->getInt('room_number');
 
-        $rooms = $tableFilterService->filterRoomData($name, $roomNumber);
+        $rooms = $tableFilterService->filterRoomData($name, $roomNumber, $currentPage, $perPage);
+
+        $totalItems = count($rooms) != $perPage ? count($rooms) : $doctrine->getManager()->getRepository(Room::class)->countData();
+        $totalPages = max(ceil($totalItems / $perPage), 1);
 
         $data = [];
 
@@ -114,8 +117,21 @@ class RoomController extends AbstractController
             $data[] = $serializerService->serializeRoom($room);
         }
 
-        $paginationResult = $paginationService->paginate($data, $currentPage, $perPage);
+        if (count($rooms) != $perPage) {
+            $data = $paginationService->paginate($data, $currentPage, $perPage);
+        } else {
+            $data =  [
+                'entity' => $data,
+                'pagination' => [
+                    'current_page' => $currentPage,
+                    'total_pages' => $totalPages,
+                    'total_items' => $totalItems,
+                    'per_page' => $perPage,
 
-        return $this->json($paginationResult);
+                ],
+            ];
+        }
+
+        return $this->json($data);
     }
 }

@@ -10,11 +10,27 @@ class TableFilterService
 {
     private $doctrine;
 
+    /**
+     * Constructor for the class.
+     *
+     * @param ManagerRegistry $doctrine
+     */
     public function __construct(ManagerRegistry $doctrine)
     {
         $this->doctrine = $doctrine;
     }
 
+    /**
+     * Filter appointment data based on given parameters.
+     *
+     * @param string $personalNumber
+     * @param string $name
+     * @param string $dateFrom
+     * @param string $dateTo
+     * @param int $currentPage
+     * @param int $perPage
+     * @return array
+     */
     public function filterAppointmentData(string $personalNumber, string $name, string $dateFrom, string $dateTo, int $currentPage, int $perPage): array
     {
         $appointmentRepository = $this->doctrine->getManager()->getRepository(Appointment::class);
@@ -33,13 +49,13 @@ class TableFilterService
         }
 
         if (!$personalNumber && !$name && !$dateFrom && !$dateTo) {
-            $filteredAppointments = $appointmentRepository->findPaginatedResults($currentPage, $perPage);
+            $filteredAppointments = $appointmentRepository->pagination($currentPage, $perPage);
         }
 
         return $filteredAppointments;
     }
 
-    public function filterRoomData(string $name, int $roomNumber): array
+    public function filterRoomData(string $name, int $roomNumber, int $currentPage, int $perPage): array
     {
         $roomRepository = $this->doctrine->getManager()->getRepository(Room::class);
         $filteredRooms = [];
@@ -53,7 +69,7 @@ class TableFilterService
         }
 
         if (!$name && !$roomNumber) {
-            $filteredRooms = $roomRepository->findAll();
+            $filteredRooms = $roomRepository->pagination($currentPage, $perPage);
         }
 
         return $filteredRooms;

@@ -9,14 +9,27 @@ use App\Entity\Comment;
 class CommentService
 {
     private $doctrine;
+
     private $dataValidatorService;
 
+    /**
+     * Constructor of the class.
+     *
+     * @param ManagerRegistry $doctrine
+     * @param DataValidatorService $dataValidatorService
+     */
     public function __construct(ManagerRegistry $doctrine, DataValidatorService $dataValidatorService)
     {
         $this->doctrine = $doctrine;
         $this->dataValidatorService = $dataValidatorService;
     }
 
+    /**
+     * Creates a new comment associated with an appointment based on the provided data.
+     *
+     * @param array $data
+     * @return array
+     */
     public function create(array $data): array
     {
         $violations = $this->dataValidatorService->validateCommentData($data);
@@ -50,7 +63,13 @@ class CommentService
         return ['comment' => $comment, 'errors' => []];
     }
 
-
+    /**
+     * Updates an existing comment based on the provided ID and data.
+     *
+     * @param string $id
+     * @param array $data
+     * @return Comment|null
+     */
     public function update(string $id, array $data): ?Comment
     {
         $comment = $this->doctrine->getManager()->getRepository(Comment::class)->findOneBy(['id' => $id]);
@@ -67,6 +86,12 @@ class CommentService
         return $comment;
     }
 
+    /**
+     * Deletes a comment based on the provided ID.
+     *
+     * @param string $id
+     * @return bool
+     */
     public function delete(string $id): bool
     {
         $comment = $this->doctrine->getManager()->getRepository(Comment::class)->findOneBy(['id' => $id]);

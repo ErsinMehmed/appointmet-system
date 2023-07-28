@@ -4,6 +4,14 @@ namespace App\Service;
 
 class PaginationService
 {
+    /**
+     * Paginates an array of data.
+     *
+     * @param array $data
+     * @param int $currentPage
+     * @param int $perPage
+     * @return array
+     */
     public function paginate(array $data, int $currentPage, int $perPage): array
     {
         $totalItems = count($data);

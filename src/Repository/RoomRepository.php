@@ -3,48 +3,44 @@
 namespace App\Repository;
 
 use App\Entity\Room;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Room>
+ * @extends AbstractRepository<Room>
  *
  * @method Room|null find($id, $lockMode = null, $lockVersion = null)
  * @method Room|null findOneBy(array $criteria, array $orderBy = null)
  * @method Room[]    findAll()
  * @method Room[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class RoomRepository extends ServiceEntityRepository
+class RoomRepository extends AbstractRepository
 {
+    private $queryBuilder;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Room::class);
+        $this->queryBuilder = $this->createQueryBuilder('a');
     }
 
     public function findByName(string $name)
     {
-        return $this->createQueryBuilder('a')
-            ->andWhere(
-                $this->createQueryBuilder('a')
-                    ->expr()
-                    ->like('a.name', ':name')
-            )
-            ->setParameter('name', '%' . $name . '%')
-            ->getQuery()
-            ->getResult();
+        return parent::findByLike($this->queryBuilder, 'name', $name);
     }
 
     public function findByRoomNumber(int $number)
     {
-        return $this->createQueryBuilder('a')
-            ->andWhere(
-                $this->createQueryBuilder('a')
-                    ->expr()
-                    ->like('a.number', ':number')
-            )
-            ->setParameter('number', $number  . '%')
-            ->getQuery()
-            ->getResult();
+        return parent::findByLike($this->queryBuilder, 'number', $number);
+    }
+
+    public function pagination($currentPage, $perPage)
+    {
+        return parent::findPaginatedResults($currentPage, $perPage);
+    }
+
+    public function countData()
+    {
+        return parent::getCount($this->queryBuilder);
     }
 
     //    /**

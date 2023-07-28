@@ -19,18 +19,18 @@ class Appointment {
 
   entity = [];
   entities = [];
-  isSaving = false;
   errorsBag = [];
   room = [];
-  dateFrom = "";
-  dateTo = "";
-  personalNumber = null;
-  currentPage = 1;
-  name = "";
-  perPage = 10;
   otherAppointments = [];
   entityComments = [];
   commentOtherAppointments = [];
+  dateFrom = "";
+  dateTo = "";
+  name = "";
+  personalNumber = null;
+  currentPage = 1;
+  perPage = 10;
+  isSaving = false;
 
   constructor() {
     makeObservable(this, {
@@ -229,15 +229,13 @@ class Appointment {
     data.append("room_id", this.formData.room_id);
 
     // Send a POST request to store form data.
-    await appointmentApi
-      .createAppointmentApi(data)
-      .then((response) => {
+    await appointmentApi.createAppointmentApi(data).then((response) => {
+      if (response.status) {
         message(
           "success",
-          response ?? "Appointment has been added successfully!",
+          response.message ?? "Appointment has been added successfully!",
           true
         );
-        this.setIsSaving(false);
         this.setFormData({
           name: "",
           personal_number: null,
@@ -247,30 +245,16 @@ class Appointment {
         });
         this.setErrorsBag([]);
         this.setIsSaving(false);
-      })
-      .catch((error) => {
-        if (
-          error.response.status === 400 &&
-          error.response.data.errors &&
-          error.response.data.errors.length > 0
-        ) {
-          this.setErrorsBag(error.response.data.errors);
-        } else if (error.response.status === 404) {
-          this.setErrorsBag([
-            "An error occurred while creating the appointment",
-          ]);
-        } else {
-          this.setErrorsBag(["Oops, something went wrong!"]);
-        }
-
+      } else {
+        this.setErrorsBag(response.errors);
         this.setIsSaving(false);
-      });
+      }
+    });
   };
 
   // Update record
   updateRecord = async (uuid) => {
     this.setIsSaving(true);
-
     const errors = validateFields(this.formData, rules);
 
     if (Object.keys(errors).length) {
@@ -288,33 +272,20 @@ class Appointment {
     };
 
     // Send a PUT request to update form data.
-    await appointmentApi
-      .updateAppointmentApi(data, uuid)
-      .then((response) => {
+    await appointmentApi.updateAppointmentApi(data, uuid).then((response) => {
+      if (response.status) {
         message(
           "success",
-          response ?? "Appointment has been updated successfully!",
+          response.message ?? "Appointment has been updated successfully!",
           true
         );
         this.setErrorsBag([]);
         this.setIsSaving(false);
-      })
-      .catch((error) => {
-        if (
-          (error.response.status =
-            400 &&
-            error.response.data.errors &&
-            error.response.data.errors.length > 0)
-        ) {
-          this.setErrorsBag(error.response.data.errors);
-        } else if ((error.response.status = 404)) {
-          this.setErrorsBag(["No appointment found"]);
-        } else {
-          this.setErrorsBag(["Oops, something went wrong!"]);
-        }
-
+      } else {
+        this.setErrorsBag(response.errors);
         this.setIsSaving(false);
-      });
+      }
+    });
   };
 
   // Delete record
@@ -326,23 +297,27 @@ class Appointment {
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes",
-    }).then(async () => {
-      try {
-        const response = await appointmentApi.deleteAppointmentApi(uuid);
-        message(
-          "success",
-          response ?? "Appointment has been deleted successfully!",
-          false,
-          false,
-          1000
-        );
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await appointmentApi.deleteAppointmentApi(uuid);
 
-        this.fetchAllAppointments(this.currentPage);
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          this.setErrorsBag(["No appointment found"]);
+          if (response.status) {
+            message(
+              "success",
+              response.message ?? "Appointment has been deleted successfully!",
+              false,
+              false,
+              2500
+            );
+
+            this.fetchAllAppointments(this.currentPage, this.perPage);
+          } else {
+            message("error", response.message, false, false, 2500);
+          }
+        } catch (error) {
+          message("error", "Oops, Something went wrong!", false, false, 2500);
         }
-        message("error", "Oops, Something went wrong!", false, false, 1000);
       }
     });
   };

@@ -37,7 +37,7 @@ class AppointmentController extends AbstractController
 
         $appointments = $tableFilterService->filterAppointmentData($personalNumber, $name, $dateFrom, $dateTo, $currentPage, $perPage);
 
-        $totalItems = count($appointments) != $perPage ? count($appointments) : $doctrine->getManager()->getRepository(Appointment::class)->getCount();
+        $totalItems = count($appointments) != $perPage ? count($appointments) : $doctrine->getManager()->getRepository(Appointment::class)->countData();
         $totalPages = max(ceil($totalItems / $perPage), 1);
 
         $data = [];
@@ -91,14 +91,14 @@ class AppointmentController extends AbstractController
         }
 
         if (count($appointment->errors) > 0) {
-            return $this->json(['errors' => $appointment->errors], 400);
+            return $this->json(['status' => true, 'errors' => $appointment->errors]);
         }
 
         if (!$appointment) {
-            return $this->json(404);
+            return $this->json(['status' => false, 'message' => 'An error occurred while creating the appointment!']);
         }
 
-        return $this->json('New appointment has been added successfully!');
+        return $this->json(['status' => true, 'message' => 'Appointment has been added successfully!']);
     }
 
     /**
@@ -115,7 +115,7 @@ class AppointmentController extends AbstractController
         $appointment = $doctrine->getManager()->getRepository(Appointment::class)->findOneBy(['uuid' => $uuid]);
 
         if (!$appointment) {
-            return $this->json(404);
+            return $this->json(['status' => false, 'message' => 'No appointment found!']);
         }
 
         $data = $serializerService->serializeAppointment($appointment);
@@ -174,7 +174,7 @@ class AppointmentController extends AbstractController
         $appointment = $doctrine->getManager()->getRepository(Appointment::class)->findOneBy(['uuid' => $uuid]);
 
         if (!$appointment) {
-            return $this->json(404);
+            return $this->json(['status' => false, 'message' => 'No appointment found!']);
         }
 
         $data = $serializerService->serializeAppointment($appointment);
@@ -217,14 +217,14 @@ class AppointmentController extends AbstractController
         }
 
         if (count($appointment->errors)) {
-            return $this->json(['errors' => $appointment->errors], 400);
+            return $this->json(['status' => false, 'errors' => $appointment->errors]);
         }
 
         if (!$appointment) {
-            return $this->json(404);
+            return $this->json(['status' => false, 'message' => 'An error occurred while updating the appointment']);
         }
 
-        return $this->json('Appointment has been updated successfully!');
+        return $this->json(['status' => true, 'message' => 'Appointment has been updated successfully!']);
     }
 
     /**
@@ -240,9 +240,9 @@ class AppointmentController extends AbstractController
         $isDeleted = $deleteManagerService->delete($uuid);
 
         if (!$isDeleted) {
-            return $this->json(404);
+            return $this->json(['status' => false, 'message' => 'No appointment found!']);
         }
 
-        return $this->json('Appointment has been deleted successfully!');
+        return $this->json(['status' => true, 'message' => 'Appointment has been deleted successfully!']);
     }
 }

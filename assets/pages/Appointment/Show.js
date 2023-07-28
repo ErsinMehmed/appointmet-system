@@ -29,8 +29,8 @@ function ShowAppointment() {
     editedCommentText,
     setComments,
     updateComment,
-    setEditingCommentId,
     setEditedCommentText,
+    startEditing,
     saveComment,
     deleteComment,
     cancelEditing,
@@ -41,20 +41,11 @@ function ShowAppointment() {
     fetchAppointmentData(uuid);
   }, []);
 
-  const startEditing = (commentId) => {
-    const comment = entityComments.find((c) => c.id === commentId);
-
-    if (comment) {
-      setEditingCommentId(commentId);
-      setEditedCommentText(comment.text);
-    }
-  };
-
   // Update form data state by setting the value
-  const handleInputChange = (value, appointmentId) => {
+  const handleInputChange = (name, value) => {
     setComments({
-      ...comments[appointmentId],
-      [appointmentId]: value,
+      ...comments,
+      [name]: value,
     });
   };
 
@@ -169,7 +160,9 @@ function ShowAppointment() {
 
                                 <button
                                   className="btn btn-primary mx-1"
-                                  onClick={() => startEditing(comment.id)}
+                                  onClick={() =>
+                                    startEditing(comment.id, entityComments)
+                                  }
                                 >
                                   Edit
                                 </button>
@@ -196,16 +189,16 @@ function ShowAppointment() {
               <div className="d-flex flex-row align-items-start">
                 <Textarea
                   label="Add comment"
-                  value={comments[entity.id] || ""}
+                  value={comments.text}
                   id="text"
                   name="text"
-                  onChange={(value) => handleInputChange(value, entity.id)}
+                  onChange={(value) => handleInputChange("text", value)}
                   errors={errorsBag}
                 />
               </div>
 
               <SubmitButton
-                isSaving={isSaving[entity.id] || false}
+                isSaving={isSaving}
                 submit={() => saveComment(entity.id, uuid)}
                 text="Post comment"
               />

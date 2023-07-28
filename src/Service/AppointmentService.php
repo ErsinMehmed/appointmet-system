@@ -10,14 +10,27 @@ use App\Entity\Room;
 class AppointmentService
 {
     private $doctrine;
+
     private $dataValidatorService;
 
+    /**
+     * Constructor of the class.
+     *
+     * @param ManagerRegistry $doctrine
+     * @param DataValidatorService $dataValidatorService
+     */
     public function __construct(ManagerRegistry $doctrine, DataValidatorService $dataValidatorService)
     {
         $this->doctrine = $doctrine;
         $this->dataValidatorService = $dataValidatorService;
     }
 
+    /**
+     * Creates a new appointment based on the provided data.
+     *
+     * @param array $data
+     * @return array
+     */
     public function create(array $data): array
     {
         $violations = $this->dataValidatorService->validateAppointmentData($data);
@@ -54,6 +67,13 @@ class AppointmentService
         return ['appointment' => $appointment, 'errors' => []];
     }
 
+    /**
+     * Updates an existing appointment based on the provided UUID and data.
+     *
+     * @param string $uuid
+     * @param array $data
+     * @return array
+     */
     public function update(string $uuid, array $data): array
     {
         $appointment = $this->doctrine->getManager()->getRepository(Appointment::class)->findOneBy(['uuid' => $uuid]);
@@ -93,6 +113,12 @@ class AppointmentService
         return ['appointment' => $appointment, 'errors' => []];
     }
 
+    /**
+     * Deletes an appointment based on the provided UUID.
+     *
+     * @param string $uuid
+     * @return bool
+     */
     public function delete(string $uuid): bool
     {
         $appointment = $this->doctrine->getManager()->getRepository(Appointment::class)->findOneBy(['uuid' => $uuid]);

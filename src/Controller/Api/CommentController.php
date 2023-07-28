@@ -28,14 +28,14 @@ class CommentController extends AbstractController
         }
 
         if (count($comment->errors)) {
-            return $this->json(['errors' => $comment->errors], 400);
+            return $this->json(['status' => true, 'errors' => $comment->errors]);
         }
 
         if (!$comment) {
-            return $this->json(404);
+            return $this->json(['status' => false, 'message' => 'An error occurred while creating the comment!']);
         }
 
-        return $this->json('Comment has been added successfully!');
+        return $this->json(['status' => true, 'message' => 'Comment has been added successfully!']);
     }
 
     /**
@@ -53,10 +53,10 @@ class CommentController extends AbstractController
         $comment = $updateManagerService->update($id, $commentData);
 
         if (!$comment) {
-            return $this->json(404);
+            return $this->json(['status' => false, 'message' => 'An error occurred while updating the comment']);
         }
 
-        return $this->json('Comment has been updated successfully!');
+        return $this->json(['status' => true, 'message' => 'Comment has been updated successfully!']);
     }
 
     /**
@@ -72,9 +72,9 @@ class CommentController extends AbstractController
         $isDeleted = $deleteManagerService->delete($id);
 
         if (!$isDeleted) {
-            return $this->json(404);
+            return $this->json(['status' => false, 'message' => 'No comment found!']);
         }
 
-        return $this->json('Comment has been deleted successfully!');
+        return $this->json(['status' => true, 'message' => 'Comment has been deleted successfully!']);
     }
 }

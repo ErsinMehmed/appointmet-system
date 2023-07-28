@@ -8,6 +8,12 @@ use App\Entity\Room;
 
 class SerializerService
 {
+    /**
+     * Serialize an Appointment object into an associative array.
+     *
+     * @param Appointment $appointment
+     * @return array
+     */
     public function serializeAppointment(Appointment $appointment): array
     {
         return [
@@ -20,6 +26,12 @@ class SerializerService
         ];
     }
 
+    /**
+     * Serialize a Room object into an associative array.
+     *
+     * @param Room $room
+     * @return array
+     */
     public function serializeRoom(Room $room): array
     {
         return [
@@ -29,6 +41,12 @@ class SerializerService
         ];
     }
 
+    /**
+     * Serialize a Comment object into an associative array.
+     *
+     * @param Comment $comment
+     * @return array
+     */
     public function serializeComment(Comment $comment): array
     {
         return [

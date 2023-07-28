@@ -7,6 +7,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class DataValidatorService
 {
+    /**
+     * Validates appointment data against specified constraints.
+     *
+     * @param array $data
+     * @return \Symfony\Component\Validator\ConstraintViolationListInterface
+     */
     public function validateAppointmentData(array $data)
     {
         $validator = Validation::createValidator();
@@ -21,7 +27,7 @@ class DataValidatorService
                 ]),
             ],
             'time' => [
-                new Assert\NotBlank(['message' => 'Time is required.']),
+                new Assert\NotBlank(['message' => 'Date is required.']),
                 new Assert\DateTime([
                     'format' => 'Y-m-d',
                     'message' => 'Time should be a valid date in the format Y-m-d.',
@@ -34,6 +40,12 @@ class DataValidatorService
         return $validator->validate($data, $constraints);
     }
 
+    /**
+     * Validates comment data against specified constraints.
+     *
+     * @param array $data
+     * @return \Symfony\Component\Validator\ConstraintViolationListInterface
+     */
     public function validateCommentData(array $data)
     {
         $validator = Validation::createValidator();
@@ -53,13 +65,19 @@ class DataValidatorService
         return $validator->validate($data, $constraints);
     }
 
+    /**
+     * Validates room data against specified constraints.
+     *
+     * @param array $data
+     * @return \Symfony\Component\Validator\ConstraintViolationListInterface
+     */
     public function validateRoomData(array $data)
     {
         $validator = Validation::createValidator();
 
         $constraints = new Assert\Collection([
             'name' => new Assert\NotBlank(['message' => 'Name is required.']),
-            'number' => new Assert\NotBlank(['message' => 'Number is required.']),
+            'number' => new Assert\NotBlank(['message' => 'Room Number is required.']),
         ]);
 
         return $validator->validate($data, $constraints);
