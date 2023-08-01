@@ -37,12 +37,12 @@ class AppointmentController extends AbstractController
 
         $appointments = $tableFilterService->filterAppointmentData($personalNumber, $name, $dateFrom, $dateTo, $currentPage, $perPage);
 
-        $totalItems = count($appointments) != $perPage ? count($appointments) : $doctrine->getManager()->getRepository(Appointment::class)->countData();
+        $totalItems = $appointments['filtered'] ? count($appointments['appointment']) : $doctrine->getManager()->getRepository(Appointment::class)->countData();
         $totalPages = max(ceil($totalItems / $perPage), 1);
 
         $data = [];
 
-        foreach ($appointments as $appointment) {
+        foreach ($appointments['appointment'] as $appointment) {
             $appointmentData = $serializerService->serializeAppointment($appointment);
 
             $room = $appointment->getRoom();
@@ -55,7 +55,7 @@ class AppointmentController extends AbstractController
             $data[] = $appointmentData;
         }
 
-        if (count($appointments) != $perPage) {
+        if ($appointments['filtered']) {
             $data = $paginationService->paginate($data, $currentPage, $perPage);
         } else {
             $data =  [
@@ -65,7 +65,6 @@ class AppointmentController extends AbstractController
                     'total_pages' => $totalPages,
                     'total_items' => $totalItems,
                     'per_page' => $perPage,
-
                 ],
             ];
         }

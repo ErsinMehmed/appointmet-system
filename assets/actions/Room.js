@@ -205,7 +205,7 @@ class Room {
       if (result.isConfirmed) {
         try {
           const response = await roomApi.deleteRoomApi(id);
-          console.log(response);
+
           if (response.status) {
             message(
               "success",

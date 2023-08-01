@@ -43,10 +43,16 @@ class RoomService
             return ['room' => null, 'errors' => $errorMessages];
         }
 
-        $existingRoom = $this->doctrine->getRepository(Room::class)->findOneBy(['number' => $data['number']]);
+        $existingRoomNumber = $this->doctrine->getRepository(Room::class)->findOneBy(['number' => $data['number']]);
 
-        if ($existingRoom) {
+        if ($existingRoomNumber) {
             return ['room' => null, 'errors' => ['A room with this number already exists.']];
+        }
+
+        $existingRoomName = $this->doctrine->getRepository(Room::class)->findOneBy(['name' => $data['name']]);
+
+        if ($existingRoomName) {
+            return ['room' => null, 'errors' => ['A room with this name already exists.']];
         }
 
         $room = new Room();

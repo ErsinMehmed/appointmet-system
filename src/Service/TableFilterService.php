@@ -37,19 +37,19 @@ class TableFilterService
         $filteredAppointments = [];
 
         if ($personalNumber) {
-            $filteredAppointments = $appointmentRepository->findByPersonalNumber($personalNumber);
+            $filteredAppointments = ['filtered' => true, 'appointment' => $appointmentRepository->findByPersonalNumber($personalNumber)];
         }
 
         if ($name) {
-            $filteredAppointments = $appointmentRepository->findByName($name);
+            $filteredAppointments = ['filtered' => true, 'appointment' => $appointmentRepository->findByName($name)];
         }
 
         if ($dateFrom || $dateTo) {
-            $filteredAppointments = $appointmentRepository->findByDateRange($dateFrom, $dateTo);
+            $filteredAppointments = ['filtered' => true, 'appointment' => $appointmentRepository->findByDateRange($dateFrom, $dateTo)];
         }
 
         if (!$personalNumber && !$name && !$dateFrom && !$dateTo) {
-            $filteredAppointments = $appointmentRepository->pagination($currentPage, $perPage);
+            $filteredAppointments = ['filtered' => false, 'appointment' => $appointmentRepository->pagination($currentPage, $perPage)];
         }
 
         return $filteredAppointments;
@@ -61,15 +61,15 @@ class TableFilterService
         $filteredRooms = [];
 
         if ($name) {
-            $filteredRooms = $roomRepository->findByName($name);
+            $filteredRooms = ['filtered' => true, 'room' => $roomRepository->findByName($name)];
         }
 
         if ($roomNumber) {
-            $filteredRooms = $roomRepository->findByRoomNumber($roomNumber);
+            $filteredRooms = ['filtered' => true, 'room' => $roomRepository->findByRoomNumber($roomNumber)];
         }
 
         if (!$name && !$roomNumber) {
-            $filteredRooms = $roomRepository->pagination($currentPage, $perPage);
+            $filteredRooms = ['filtered' => false, 'room' => $roomRepository->pagination($currentPage, $perPage)];
         }
 
         return $filteredRooms;

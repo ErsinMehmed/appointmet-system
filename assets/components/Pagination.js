@@ -24,12 +24,18 @@ function Pagination(props) {
         className={`btn btn-primary mx-1 ${
           props.currentPage === page ? "active" : ""
         }`}
-        onClick={() => props.handlePageClick(page)}
+        onClick={() => handlePageClick(page)}
       >
         {page}
       </button>
     );
   }
+
+  const handlePageClick = (page) => {
+    if (props.currentPage !== page) {
+      props.handlePageClick(page);
+    }
+  };
 
   return (
     <div className="d-flex align-items-center justify-content-end">

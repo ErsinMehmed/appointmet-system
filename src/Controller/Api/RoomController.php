@@ -108,16 +108,16 @@ class RoomController extends AbstractController
 
         $rooms = $tableFilterService->filterRoomData($name, $roomNumber, $currentPage, $perPage);
 
-        $totalItems = count($rooms) != $perPage ? count($rooms) : $doctrine->getManager()->getRepository(Room::class)->countData();
+        $totalItems = $rooms['filtered'] ? count($rooms['room']) : $doctrine->getManager()->getRepository(Room::class)->countData();
         $totalPages = max(ceil($totalItems / $perPage), 1);
 
         $data = [];
 
-        foreach ($rooms as $room) {
+        foreach ($rooms['room'] as $room) {
             $data[] = $serializerService->serializeRoom($room);
         }
 
-        if (count($rooms) != $perPage) {
+        if ($rooms['filtered']) {
             $data = $paginationService->paginate($data, $currentPage, $perPage);
         } else {
             $data =  [
@@ -127,7 +127,6 @@ class RoomController extends AbstractController
                     'total_pages' => $totalPages,
                     'total_items' => $totalItems,
                     'per_page' => $perPage,
-
                 ],
             ];
         }
