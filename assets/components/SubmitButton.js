@@ -1,8 +1,9 @@
-import React from "react";
+import React, { forwardRef } from "react";
 
-const SubmitButton = (props) => {
+const SubmitButton = forwardRef((props, ref) => {
   return (
     <button
+      ref={ref}
       disabled={props.isSaving}
       onClick={props.submit}
       type="button"
@@ -12,6 +13,6 @@ const SubmitButton = (props) => {
       {props.text}
     </button>
   );
-};
+});
 
 export default SubmitButton;

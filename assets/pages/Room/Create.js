@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import { observer } from "mobx-react-lite";
 
 import BackButton from "../../components/BackButton";
@@ -24,6 +24,23 @@ function AddRoom() {
       [name]: value,
     });
   };
+
+  const submitButtonRef = useRef();
+
+  // Function to handle the key press event
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      submitButtonRef.current.click();
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyPress);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [submitButtonRef]);
 
   return (
     <div className="container">
@@ -57,7 +74,12 @@ function AddRoom() {
             errors={errorsBag}
           />
 
-          <SubmitButton isSaving={isSaving} submit={saveRecord} text="Save" />
+          <SubmitButton
+            ref={submitButtonRef}
+            isSaving={isSaving}
+            submit={saveRecord}
+            text="Save"
+          />
         </div>
       </div>
     </div>

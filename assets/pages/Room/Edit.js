@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { useParams } from "react-router-dom";
 
@@ -44,6 +44,23 @@ function EditRoom() {
     });
   };
 
+  const submitButtonRef = useRef();
+
+  // Function to handle the key press event
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      submitButtonRef.current.click();
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyPress);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [submitButtonRef]);
+
   // Render the spinner while loading
   if (!entity) {
     return <Loader />;
@@ -82,6 +99,7 @@ function EditRoom() {
           />
 
           <SubmitButton
+            ref={submitButtonRef}
             isSaving={isSaving}
             submit={() => updateRecord(id)}
             text="Update"
