@@ -47,3 +47,7 @@ export function validateFields(inputData, rules) {
 
   return errors;
 }
+
+export function validateForm(formData, rules) {
+  return validateFields(formData, rules);
+}

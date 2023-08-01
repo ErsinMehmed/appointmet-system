@@ -66,6 +66,63 @@ class RoomController extends AbstractController
     }
 
     /**
+     * Edit function
+     *
+     * @param \Doctrine\Persistence\ManagerRegistry $doctrine
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @param int $id
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    #[Route('/rooms/edit/{id}', name: 'room_edit', methods: 'GET')]
+    public function edit(SerializerService $serializerService, ManagerRegistry $doctrine, Request $request, int $id): Response
+    {
+        $room = $doctrine->getManager()->getRepository(Room::class)->findOneBy(['id' => $id]);
+
+        if (!$room) {
+            return $this->json(['status' => false, 'message' => 'No room found!']);
+        }
+
+        $data = $serializerService->serializeRoom($room);
+
+        $acceptHeader = $request->headers->get('Accept');
+
+        if ($acceptHeader && strpos($acceptHeader, 'application/json') !== false) {
+            return $this->json(['room' => $data]);
+        }
+
+        return $this->render('reactapp/index.html.twig');
+    }
+
+    /**
+     * Update function
+     *
+     * @param \App\Services\RoomService $updateManagerService
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @param int $id
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    #[Route('/rooms/{id}', name: 'room_update', methods: 'PUT')]
+    public function update(RoomService $updateManagerService, Request $request, int $id): Response
+    {
+        $roomData = (array)json_decode($request->getContent());
+        $room = $updateManagerService->update($id, $roomData);
+
+        if (is_array($room)) {
+            $room = (object)$room;
+        }
+
+        if (count($room->errors)) {
+            return $this->json(['status' => false, 'errors' => $room->errors]);
+        }
+
+        if (!$room) {
+            return $this->json(['status' => false, 'message' => 'An error occurred while updating the room']);
+        }
+
+        return $this->json(['status' => true, 'message' => 'Room has been updated successfully!']);
+    }
+
+    /**
      * Destroy function
      *
      * @param \App\Services\RoomService $storeManagerService

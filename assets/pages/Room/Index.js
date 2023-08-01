@@ -12,21 +12,19 @@ function IndexRoom() {
     entities,
     name,
     roomNumber,
-    currentPage,
     perPage,
-    fetchAllRooms,
+    loadRooms,
     deleteRecord,
     handlePageClick,
     setName,
     setRoomNumber,
     setPerPage,
-    handleNextPage,
-    handlePrevPage,
+    handlePageChange,
   } = RoomAction;
 
   // Fetch the appointment list upon component mount
   useEffect(() => {
-    fetchAllRooms(currentPage, perPage, name, roomNumber);
+    loadRooms();
   }, []);
 
   return (
@@ -68,8 +66,8 @@ function IndexRoom() {
                 totalPages={entities.pagination?.total_pages}
                 totalItems={entities.pagination?.total_items}
                 perPage={perPage}
-                handlePrevPage={handlePrevPage}
-                handleNextPage={handleNextPage}
+                handlePrevPage={handlePageChange}
+                handleNextPage={() => handlePageChange("next")}
                 handlePageClick={(pageNumber) => {
                   handlePageClick(pageNumber);
                 }}

@@ -13,10 +13,9 @@ function IndexAppointment() {
     dateFrom,
     dateTo,
     personalNumber,
-    currentPage,
     name,
     perPage,
-    fetchAllAppointments,
+    loadAppointments,
     deleteRecord,
     setDateTo,
     setDateFrom,
@@ -24,20 +23,12 @@ function IndexAppointment() {
     handlePageClick,
     setName,
     setPerPage,
-    handleNextPage,
-    handlePrevPage,
+    handlePageChange,
   } = AppointmentAction;
 
   // Fetch the appointment list upon component mount
   useEffect(() => {
-    fetchAllAppointments(
-      currentPage,
-      perPage,
-      personalNumber,
-      name,
-      dateFrom,
-      dateTo
-    );
+    loadAppointments();
   }, []);
 
   return (
@@ -95,8 +86,8 @@ function IndexAppointment() {
                 totalPages={entities.pagination?.total_pages}
                 totalItems={entities.pagination?.total_items}
                 perPage={perPage}
-                handlePrevPage={handlePrevPage}
-                handleNextPage={handleNextPage}
+                handlePrevPage={handlePageChange}
+                handleNextPage={() => handlePageChange("next")}
                 handlePageClick={(pageNumber) => {
                   handlePageClick(pageNumber);
                 }}

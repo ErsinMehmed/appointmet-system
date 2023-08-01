@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import roomApi from "../api/Room";
 
 import { rules } from "../rules/roomForm";
-import { validateFields } from "../validations";
+import { validateForm } from "../validations";
 import { message } from "../utils";
 
 class Room {
@@ -13,17 +13,19 @@ class Room {
     number: null,
   };
 
+  entity = [];
   entities = [];
-  isSaving = false;
   errorsBag = [];
-  currentPage = 1;
-  perPage = 10;
+  isSaving = false;
   name = "";
   roomNumber = null;
+  currentPage = 1;
+  perPage = 10;
 
   constructor() {
     makeObservable(this, {
       formData: observable,
+      entity: observable,
       entities: observable,
       isSaving: observable,
       errorsBag: observable,
@@ -32,6 +34,7 @@ class Room {
       name: observable,
       roomNumber: observable,
       setFormData: action,
+      setEntity: action,
       setEntities: action,
       setIsSaving: action,
       setErrorsBag: action,
@@ -44,6 +47,10 @@ class Room {
 
   setFormData = (formData) => {
     this.formData = formData;
+  };
+
+  setEntity = (entity) => {
+    this.entity = entity;
   };
 
   setEntities = (entities) => {
@@ -64,132 +71,109 @@ class Room {
 
   setPerPage = (perPage) => {
     this.perPage = perPage;
-    this.fetchAllRooms(this.currentPage, perPage, this.name, this.roomNumber);
+
+    const newTotalPages = Math.ceil(
+      this.entities.pagination?.total_items / perPage
+    );
+
+    this.loadRooms(
+      this.currentPage > newTotalPages ? newTotalPages : this.currentPage
+    );
   };
 
   setName = (name) => {
     this.name = name;
-    this.fetchAllRooms(this.currentPage, this.perPage, name, this.roomNumber);
+    this.loadRooms();
   };
 
   setRoomNumber = (roomNumber) => {
     this.roomNumber = roomNumber;
-    this.fetchAllRooms(this.currentPage, this.perPage, this.name, roomNumber);
+    this.loadRooms();
   };
 
-  // // Get all rooms data from controller
-  // fetchRoom = async () => {
-  //   this.setRoom(await roomApi.fetchAllRoomsApi());
-  // };
-
-  // // Get appointment data from controller
-  // fetchAppointmentData = async (uuid) => {
-  //   const { entity, otherAppointments, comments, commentOtherAppointments } =
-  //     await appointmentApi.fetchAppointmentDataApi(uuid);
-
-  //   this.setEntity(entity);
-  //   this.setOtherAppointments(otherAppointments);
-  //   this.setEntityComments(comments);
-  //   this.setCommentOtherAppointments(commentOtherAppointments);
-  // };
-
-  // // Get appointment data from controller
-  // fetchAppointment = async (uuid) => {
-  //   this.setEntity(await appointmentApi.fetchAppointmentApi(uuid));
-  // };
-
   // Get all rooms data from controller
-  fetchAllRooms = async (page, perPage, name, roomNumber) => {
+  loadRooms = async (newTotalPages) => {
     this.setEntities(
-      await roomApi.fetchAllRoomsApi(page, perPage, name, roomNumber)
+      await roomApi.loadRoomsApi(
+        newTotalPages ?? this.currentPage,
+        this.perPage,
+        this.name,
+        this.roomNumber
+      )
     );
+  };
+
+  // Get room data from controller
+  fetchRoom = async (id) => {
+    this.setEntity(await roomApi.fetchRoomApi(id));
   };
 
   // Save record
   saveRecord = async () => {
     this.setIsSaving(true);
-    const data = new FormData();
-    const errors = validateFields(this.formData, rules);
+    this.setErrorsBag(validateForm(this.formData, rules));
 
-    if (Object.keys(errors).length) {
-      this.setErrorsBag(errors);
+    if (Object.keys(this.errorsBag).length) {
       this.setIsSaving(false);
       return;
     }
 
+    const data = new FormData();
     data.append("name", this.formData.name);
     data.append("number", this.formData.number);
 
     // Send a POST request to store form data.
-    await roomApi.createRoomApi(data).then((response) => {
-      if (response.status) {
-        message(
-          "success",
-          response.message ?? "Room has been added successfully!",
-          true
-        );
-        this.setIsSaving(false);
-        this.setFormData({
-          name: "",
-          number: null,
-        });
-        this.setErrorsBag([]);
-        this.setIsSaving(false);
-      } else {
-        this.setErrorsBag(response.errors);
-        this.setIsSaving(false);
-      }
-    });
+    const response = await roomApi.createRoomApi(data);
+
+    if (response.status) {
+      message(
+        "success",
+        response.message ?? "Room has been added successfully!",
+        true
+      );
+      this.setIsSaving(false);
+      this.setFormData({
+        name: "",
+        number: null,
+      });
+      this.setErrorsBag([]);
+      this.setIsSaving(false);
+    } else {
+      this.setErrorsBag(response.errors);
+      this.setIsSaving(false);
+    }
   };
 
   // Update record
-  updateRecord = async (uuid) => {
+  updateRecord = async (id) => {
     this.setIsSaving(true);
+    this.setErrorsBag(validateForm(this.formData, rules));
 
-    const errors = validateFields(this.formData, rules);
-
-    if (Object.keys(errors).length) {
-      this.setErrorsBag(errors);
+    if (Object.keys(this.errorsBag).length) {
       this.setIsSaving(false);
       return;
     }
 
     const data = {
       name: this.formData.name,
-      personal_number: this.formData.personal_number,
-      time: this.formData.time,
-      description: this.formData.description,
-      room_id: this.formData.room_id,
+      number: this.formData.number,
     };
 
     // Send a PUT request to update form data.
-    await appointmentApi
-      .updateAppointmentApi(data, uuid)
-      .then((response) => {
-        message(
-          "success",
-          response ?? "Appointment has been updated successfully!",
-          true
-        );
-        this.setErrorsBag([]);
-        this.setIsSaving(false);
-      })
-      .catch((error) => {
-        if (
-          (error.response.status =
-            400 &&
-            error.response.data.errors &&
-            error.response.data.errors.length > 0)
-        ) {
-          this.setErrorsBag(error.response.data.errors);
-        } else if ((error.response.status = 404)) {
-          this.setErrorsBag(["No appointment found"]);
-        } else {
-          this.setErrorsBag(["Oops, something went wrong!"]);
-        }
+    const response = await roomApi.updateRoomApi(data, id);
 
-        this.setIsSaving(false);
-      });
+    if (response.status) {
+      message(
+        "success",
+        response.message ?? "Room has been updated successfully!",
+        true
+      );
+      this.setErrorsBag([]);
+      this.setIsSaving(false);
+    } else {
+      this.setErrorsBag(response.errors);
+      this.setIsSaving(false);
+    }
   };
 
   // Delete record
@@ -215,7 +199,7 @@ class Room {
               2500
             );
 
-            this.fetchAllRooms(this.currentPage, this.perPage);
+            this.loadRooms();
           } else {
             message("error", response.message, false, false, 2500);
           }
@@ -226,36 +210,17 @@ class Room {
     });
   };
 
-  // Handle next page
-  handleNextPage = () => {
-    this.setCurrentPage(this.currentPage + 1);
-    this.fetchAllRooms(
-      this.currentPage,
-      this.perPage,
-      this.name,
-      this.roomNumber
-    );
-  };
-
-  // Handle prev page
-  handlePrevPage = () => {
-    this.setCurrentPage(this.currentPage - 1);
-    this.fetchAllRooms(
-      this.currentPage,
-      this.perPage,
-      this.name,
-      this.roomNumber
-    );
+  // Handle prev or next page
+  handlePageChange = (direction) => {
+    const newPage =
+      direction === "next" ? this.currentPage + 1 : this.currentPage - 1;
+    this.setCurrentPage(newPage);
+    this.loadRooms();
   };
 
   handlePageClick = (page) => {
     this.setCurrentPage(page);
-    this.fetchAllRooms(
-      this.currentPage,
-      this.perPage,
-      this.name,
-      this.roomNumber
-    );
+    this.loadRooms();
   };
 }
 

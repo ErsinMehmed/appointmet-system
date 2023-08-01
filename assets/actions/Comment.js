@@ -6,7 +6,7 @@ import commentApi from "../api/Comment";
 import AppointmentAction from "./Appointment";
 
 import { rules } from "../rules/commentForm";
-import { validateFields } from "../validations";
+import { validateForm } from "../validations";
 import { message } from "../utils";
 
 class Comment {
@@ -54,41 +54,37 @@ class Comment {
 
   saveComment = async (appointmentId, uuid) => {
     this.setIsSaving(true);
+    this.setErrorsBag(validateForm(this.comments, rules));
 
-    const data = new FormData();
-    const currentDate = new Date();
-
-    // Perform validation for all fields.
-    const errors = validateFields(this.comments, rules);
-
-    if (Object.keys(errors).length) {
-      this.setErrorsBag(errors);
+    if (Object.keys(this.errorsBag).length) {
       this.setIsSaving(false);
       return;
     }
 
+    const data = new FormData();
+    const currentDate = new Date();
     data.append("appointment_id", appointmentId);
     data.append("text", this.comments.text);
     data.append("date", currentDate.toISOString().split("T")[0]);
 
     // Send a POST request to create record.
-    await commentApi.createCommentApi(data).then((response) => {
-      if (response.status) {
-        message(
-          "success",
-          response.message ?? "Comment has been added successfully!",
-          true
-        );
-        this.setErrorsBag([]);
-        this.setComments({ text: "" });
-        this.setIsSaving(false);
+    const response = await commentApi.createCommentApi(data);
 
-        AppointmentAction.fetchAppointmentData(uuid);
-      } else {
-        this.setErrorsBag(response.errors);
-        this.setIsSaving(false);
-      }
-    });
+    if (response.status) {
+      message(
+        "success",
+        response.message ?? "Comment has been added successfully!",
+        true
+      );
+      this.setErrorsBag([]);
+      this.setComments({ text: "" });
+      this.setIsSaving(false);
+
+      AppointmentAction.fetchAppointmentData(uuid);
+    } else {
+      this.setErrorsBag(response.errors);
+      this.setIsSaving(false);
+    }
   };
 
   startEditing = (commentId, entityComments) => {
@@ -107,24 +103,25 @@ class Comment {
 
   // Update comment
   updateComment = async (commentId, uuid) => {
-    await commentApi
-      .updateCommentApi({ text: this.editedCommentText }, commentId)
-      .then((response) => {
-        if (response.status) {
-          message(
-            "success",
-            response.message ?? "Comment has been updated successfully!",
-            true
-          );
-          this.setEditingCommentId(null);
-          this.setEditedCommentText("");
+    const response = await commentApi.updateCommentApi(
+      { text: this.editedCommentText },
+      commentId
+    );
 
-          AppointmentAction.fetchAppointmentData(uuid);
-        } else {
-          this.setErrorsBag(response.errors);
-          this.setIsSaving(false);
-        }
-      });
+    if (response.status) {
+      message(
+        "success",
+        response.message ?? "Comment has been updated successfully!",
+        true
+      );
+      this.setEditingCommentId(null);
+      this.setEditedCommentText("");
+
+      AppointmentAction.fetchAppointmentData(uuid);
+    } else {
+      this.setErrorsBag(response.errors);
+      this.setIsSaving(false);
+    }
   };
 
   // Delete comment

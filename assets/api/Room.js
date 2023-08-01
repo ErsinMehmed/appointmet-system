@@ -2,6 +2,15 @@ import axios from "axios";
 import { path } from "../config";
 
 class Room {
+  fetchRoomApi = async (id) => {
+    try {
+      const response = await axios.get(`${path}/api/rooms/edit/${id}`);
+      return response.data;
+    } catch (error) {
+      return error;
+    }
+  };
+
   fetchRoomsApi = async () => {
     try {
       const response = await axios.get(`${path}/api/rooms`);
@@ -11,7 +20,7 @@ class Room {
     }
   };
 
-  fetchAllRoomsApi = async (page, perPage, name, roomNumber) => {
+  loadRoomsApi = async (page, perPage, name, roomNumber) => {
     try {
       let url = `${path}/api/all-rooms?page=${page ?? 1}&per_page=${
         perPage ?? 10
@@ -35,6 +44,15 @@ class Room {
   createRoomApi = async (data) => {
     try {
       const response = await axios.post(`${path}/api/rooms`, data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  updateRoomApi = async (data, id) => {
+    try {
+      const response = await axios.put(`${path}/api/rooms/${id}`, data);
       return response.data;
     } catch (error) {
       throw error;

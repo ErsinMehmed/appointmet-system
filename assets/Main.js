@@ -7,6 +7,7 @@ import IndexAppointment from "./pages/Appointment/Index";
 import ShowAppointment from "./pages/Appointment/Show";
 
 import CreateRoom from "./pages/Room/Create";
+import EditRoom from "./pages/Room/Edit";
 import IndexRoom from "./pages/Room/Index";
 
 function Main() {
@@ -19,7 +20,7 @@ function Main() {
 
       <Route path="/rooms" element={<IndexRoom />} />
       <Route path="/rooms/create" element={<CreateRoom />} />
-      {/* <Route path="/rooms/edit/:id" element={<EditRoom />} /> */}
+      <Route path="/rooms/edit/:id" element={<EditRoom />} />
     </Routes>
   );
 }

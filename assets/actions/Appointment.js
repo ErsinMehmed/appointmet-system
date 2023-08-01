@@ -5,7 +5,7 @@ import appointmentApi from "../api/Appointment";
 import roomApi from "../api/Room";
 
 import { rules } from "../rules/appointmentForm";
-import { validateFields } from "../validations";
+import { validateForm } from "../validations";
 import { message } from "../utils";
 
 class Appointment {
@@ -81,26 +81,19 @@ class Appointment {
 
   setPerPage = (perPage) => {
     this.perPage = perPage;
-    this.fetchAllAppointments(
-      this.currentPage,
-      perPage,
-      this.personalNumber,
-      this.name,
-      this.dateFrom,
-      this.dateTo
+
+    const newTotalPages = Math.ceil(
+      this.entities.pagination?.total_items / perPage
+    );
+
+    this.loadAppointments(
+      this.currentPage > newTotalPages ? newTotalPages : this.currentPage
     );
   };
 
   setName = (name) => {
     this.name = name;
-    this.fetchAllAppointments(
-      this.currentPage,
-      this.perPage,
-      this.personalNumber,
-      name,
-      this.dateFrom,
-      this.dateTo
-    );
+    this.loadAppointments();
   };
 
   setCurrentPage = (currentPage) => {
@@ -109,39 +102,18 @@ class Appointment {
 
   setPersonalNumber = (personalNumber) => {
     this.personalNumber = personalNumber;
-    this.fetchAllAppointments(
-      this.currentPage,
-      this.perPage,
-      personalNumber,
-      this.name,
-      this.dateFrom,
-      this.dateTo
-    );
+    this.loadAppointments();
   };
 
   setDateTo = (dateTo) => {
     this.dateTo = dateTo;
 
-    this.fetchAllAppointments(
-      this.currentPage,
-      this.perPage,
-      personalNumber,
-      this.name,
-      this.dateFrom,
-      dateTo
-    );
+    this.loadAppointments();
   };
 
   setDateFrom = (dateFrom) => {
     this.dateFrom = dateFrom;
-    this.fetchAllAppointments(
-      this.currentPage,
-      this.perPage,
-      personalNumber,
-      this.name,
-      dateFrom,
-      this.dateTo
-    );
+    this.loadAppointments();
   };
 
   setEntity = (entity) => {
@@ -190,22 +162,15 @@ class Appointment {
   };
 
   // Get all appointments data from controller
-  fetchAllAppointments = async (
-    page,
-    perPage,
-    personalNumber,
-    name,
-    dateFrom,
-    dateTo
-  ) => {
+  loadAppointments = async (newTotalPages) => {
     this.setEntities(
       await appointmentApi.fetchAllAppointmentApi(
-        page,
-        perPage,
-        personalNumber,
-        name,
-        dateFrom,
-        dateTo
+        newTotalPages ?? this.currentPage,
+        this.perPage,
+        this.personalNumber,
+        this.name,
+        this.dateFrom,
+        this.dateTo
       )
     );
   };
@@ -213,15 +178,14 @@ class Appointment {
   // Save record
   saveRecord = async () => {
     this.setIsSaving(true);
-    const data = new FormData();
-    const errors = validateFields(this.formData, rules);
+    this.setErrorsBag(validateForm(this.formData, rules));
 
-    if (Object.keys(errors).length) {
-      this.setErrorsBag(errors);
+    if (Object.keys(this.errorsBag).length) {
       this.setIsSaving(false);
       return;
     }
 
+    const data = new FormData();
     data.append("name", this.formData.name);
     data.append("personal_number", this.formData.personal_number);
     data.append("time", this.formData.time);
@@ -229,36 +193,35 @@ class Appointment {
     data.append("room_id", this.formData.room_id);
 
     // Send a POST request to store form data.
-    await appointmentApi.createAppointmentApi(data).then((response) => {
-      if (response.status) {
-        message(
-          "success",
-          response.message ?? "Appointment has been added successfully!",
-          true
-        );
-        this.setFormData({
-          name: "",
-          personal_number: null,
-          time: "",
-          description: "",
-          room_id: null,
-        });
-        this.setErrorsBag([]);
-        this.setIsSaving(false);
-      } else {
-        this.setErrorsBag(response.errors);
-        this.setIsSaving(false);
-      }
-    });
+    const response = await appointmentApi.createAppointmentApi(data);
+
+    if (response.status) {
+      message(
+        "success",
+        response.message ?? "Appointment has been added successfully!",
+        true
+      );
+      this.setFormData({
+        name: "",
+        personal_number: null,
+        time: "",
+        description: "",
+        room_id: null,
+      });
+      this.setErrorsBag([]);
+      this.setIsSaving(false);
+    } else {
+      this.setErrorsBag(response.errors);
+      this.setIsSaving(false);
+    }
   };
 
   // Update record
   updateRecord = async (uuid) => {
     this.setIsSaving(true);
-    const errors = validateFields(this.formData, rules);
+    this.setErrorsBag(validateForm(this.formData, rules));
 
-    if (Object.keys(errors).length) {
-      this.setErrorsBag(errors);
+    if (Object.keys(this.errorsBag).length) {
       this.setIsSaving(false);
       return;
     }
@@ -272,20 +235,20 @@ class Appointment {
     };
 
     // Send a PUT request to update form data.
-    await appointmentApi.updateAppointmentApi(data, uuid).then((response) => {
-      if (response.status) {
-        message(
-          "success",
-          response.message ?? "Appointment has been updated successfully!",
-          true
-        );
-        this.setErrorsBag([]);
-        this.setIsSaving(false);
-      } else {
-        this.setErrorsBag(response.errors);
-        this.setIsSaving(false);
-      }
-    });
+    const response = await appointmentApi.updateAppointmentApi(data, uuid);
+
+    if (response.status) {
+      message(
+        "success",
+        response.message ?? "Appointment has been updated successfully!",
+        true
+      );
+      this.setErrorsBag([]);
+      this.setIsSaving(false);
+    } else {
+      this.setErrorsBag(response.errors);
+      this.setIsSaving(false);
+    }
   };
 
   // Delete record
@@ -311,7 +274,7 @@ class Appointment {
               2500
             );
 
-            this.fetchAllAppointments(this.currentPage, this.perPage);
+            this.loadAppointments();
           } else {
             message("error", response.message, false, false, 2500);
           }
@@ -322,42 +285,17 @@ class Appointment {
     });
   };
 
-  // Handle next page
-  handleNextPage = () => {
-    this.setCurrentPage(this.currentPage + 1);
-    this.fetchAllAppointments(
-      this.currentPage,
-      this.perPage,
-      this.personalNumber,
-      this.name,
-      this.dateFrom,
-      this.dateTo
-    );
-  };
-
-  // Handle prev page
-  handlePrevPage = () => {
-    this.setCurrentPage(this.currentPage - 1);
-    this.fetchAllAppointments(
-      this.currentPage,
-      this.perPage,
-      this.personalNumber,
-      this.name,
-      this.dateFrom,
-      this.dateTo
-    );
+  // Handle prev or next page
+  handlePageChange = (direction) => {
+    const newPage =
+      direction === "next" ? this.currentPage + 1 : this.currentPage - 1;
+    this.setCurrentPage(newPage);
+    this.loadAppointments();
   };
 
   handlePageClick = (page) => {
     this.setCurrentPage(page);
-    this.fetchAllAppointments(
-      page,
-      this.perPage,
-      this.personalNumber,
-      this.name,
-      this.dateFrom,
-      this.dateTo
-    );
+    this.loadAppointments();
   };
 }
 

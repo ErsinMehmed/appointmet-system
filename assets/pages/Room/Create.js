@@ -37,29 +37,27 @@ function AddRoom() {
         <div className="card-body">
           <ErrorAlert errors={errorsBag} />
 
-          <form>
-            <Input
-              label="Name"
-              value={formData.name}
-              type="text"
-              id="name"
-              name="name"
-              onChange={(value) => handleInputChange("name", value)}
-              errors={errorsBag}
-            />
+          <Input
+            label="Name"
+            value={formData.name}
+            type="text"
+            id="name"
+            name="name"
+            onChange={(value) => handleInputChange("name", value)}
+            errors={errorsBag}
+          />
 
-            <Input
-              label="Room number"
-              value={formData.number}
-              type="text"
-              id="number"
-              name="number"
-              onChange={(value) => handleInputChange("number", value)}
-              errors={errorsBag}
-            />
+          <Input
+            label="Room number"
+            value={formData.number}
+            type="text"
+            id="number"
+            name="number"
+            onChange={(value) => handleInputChange("number", value)}
+            errors={errorsBag}
+          />
 
-            <SubmitButton isSaving={isSaving} submit={saveRecord} text="Save" />
-          </form>
+          <SubmitButton isSaving={isSaving} submit={saveRecord} text="Save" />
         </div>
       </div>
     </div>

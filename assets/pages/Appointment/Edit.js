@@ -71,63 +71,61 @@ function EditAppointment() {
         <div className="card-body">
           <ErrorAlert errors={errorsBag} />
 
-          <form>
-            <Input
-              label="Name"
-              value={formData.name}
-              type="text"
-              id="name"
-              name="name"
-              onChange={(value) => handleInputChange("name", value)}
-              errors={errorsBag}
-            />
+          <Input
+            label="Name"
+            value={formData.name}
+            type="text"
+            id="name"
+            name="name"
+            onChange={(value) => handleInputChange("name", value)}
+            errors={errorsBag}
+          />
 
-            <Input
-              label="Personal Number"
-              value={formData.personal_number}
-              type="text"
-              id="personal-number"
-              name="personal_number"
-              maxLength="10"
-              onChange={(value) => handleInputChange("personal_number", value)}
-              errors={errorsBag}
-            />
+          <Input
+            label="Personal Number"
+            value={formData.personal_number}
+            type="text"
+            id="personal-number"
+            name="personal_number"
+            maxLength="10"
+            onChange={(value) => handleInputChange("personal_number", value)}
+            errors={errorsBag}
+          />
 
-            <Input
-              label="Choice date"
-              value={formData.time}
-              type="date"
-              id="date"
-              name="time"
-              onChange={(value) => handleInputChange("time", value)}
-              errors={errorsBag}
-            />
+          <Input
+            label="Choice date"
+            value={formData.time}
+            type="date"
+            id="date"
+            name="time"
+            onChange={(value) => handleInputChange("time", value)}
+            errors={errorsBag}
+          />
 
-            <Select
-              label="Choice room"
-              value={formData.room_id}
-              onChange={(value) => handleInputChange("room_id", value)}
-              id="room"
-              name="room_id"
-              options={room}
-              errors={errorsBag}
-            />
+          <Select
+            label="Choice room"
+            value={formData.room_id}
+            onChange={(value) => handleInputChange("room_id", value)}
+            id="room"
+            name="room_id"
+            options={room}
+            errors={errorsBag}
+          />
 
-            <Textarea
-              label="Description"
-              value={formData.description}
-              id="description"
-              name="description"
-              onChange={(value) => handleInputChange("description", value)}
-              errors={errorsBag}
-            />
+          <Textarea
+            label="Description"
+            value={formData.description}
+            id="description"
+            name="description"
+            onChange={(value) => handleInputChange("description", value)}
+            errors={errorsBag}
+          />
 
-            <SubmitButton
-              isSaving={isSaving}
-              submit={() => updateRecord(uuid)}
-              text="Update"
-            />
-          </form>
+          <SubmitButton
+            isSaving={isSaving}
+            submit={() => updateRecord(uuid)}
+            text="Update"
+          />
         </div>
       </div>
     </div>

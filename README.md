@@ -21,7 +21,7 @@ To set up the database, run the following command:
 
 To build the Appointment System for development, execute the following commands:
 
-1.  Build the frontend assets: `npm run dev`
+1.  Build the frontend assets: `npm run build`
 2.  Alternatively, you can use the watch mode to automatically rebuild when changes are detected: `npm run watch`
 
 ## Libraries
