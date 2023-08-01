@@ -76,6 +76,10 @@ class Room {
       this.entities.pagination?.total_items / perPage
     );
 
+    this.setCurrentPage(
+      this.currentPage > newTotalPages ? newTotalPages : this.currentPage
+    );
+
     this.loadRooms(
       this.currentPage > newTotalPages ? newTotalPages : this.currentPage
     );

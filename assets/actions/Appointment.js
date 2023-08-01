@@ -86,6 +86,10 @@ class Appointment {
       this.entities.pagination?.total_items / perPage
     );
 
+    this.setCurrentPage(
+      this.currentPage > newTotalPages ? newTotalPages : this.currentPage
+    );
+
     this.loadAppointments(
       this.currentPage > newTotalPages ? newTotalPages : this.currentPage
     );
